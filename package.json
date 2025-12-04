@@ -22,7 +22,8 @@
     "generate-spec": "tsx scripts/generate-spec.ts",
     "validate-content": "tsx scripts/validate-content.ts",
     "validate-themes": "tsx scripts/validate-themes.ts",
-    "validate": "npm run generate-spec && npm run validate-content && npm run validate-themes"
+    "validate": "npm run generate-spec && npm run validate-content && npm run validate-themes",
+    "analyze": "tsx scripts/parse-website.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.10",
@@ -32,6 +33,7 @@
     "astro-icon": "^1.1.5",
     "js-yaml": "^4.1.0",
     "nanostores": "^1.0.1",
+    "puppeteer": "^24.32.0",
     "tailwind-merge": "^3.3.1",
     "unpic": "^4.1.3"
   },
