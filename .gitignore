@@ -4,6 +4,9 @@ dist/
 .output/
 .wrangler/
 
+# Temporary files
+data/
+
 # Development specifications
 dev/content.spec.yaml 
 dev/theme.spec.yaml
