@@ -1,6 +1,6 @@
-# AI Agent Project Context: Schemata
+# AI Agent Project Context: Astrical
 
-**You are working on Schemata, an AI-first Astro theme.**
+**You are working on Astrical, an AI-first Astro theme.**
 
 ## Core Philosophy
 This project is designed for **AI-driven development**. The content and structure are decoupled from the code.

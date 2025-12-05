@@ -1,12 +1,12 @@
-# Schemata: AI-First Astro Theme
+# Astrical: AI-First Astro Theme
 
 > **Rapidly generate enterprise-grade websites with AI.**
 
-Schemata is an open-source [Astro](https://astro.build/) theme and framework designed specifically for **AI-driven development**. It decouples content and structure from code, allowing AI agents to build, update, and manage complex websites purely by manipulating structured YAML data.
+Astrical is an open-source [Astro](https://astro.build/) theme and framework designed specifically for **AI-driven development**. It decouples content and structure from code, allowing AI agents to build, update, and manage complex websites purely by manipulating structured YAML data.
 
-## 🚀 Why Schemata?
+## 🚀 Why Astrical?
 
-Traditional web development requires AI to understand complex codebases, component logic, and framework nuances. Schemata flips this model:
+Traditional web development requires AI to understand complex codebases, component logic, and framework nuances. Astrical flips this model:
 
 *   **Content as Configuration**: The entire site—pages, menus, styles, and component compositions—is defined in declarative YAML files.
 *   **AI-Optimized Architecture**: The project structure is documented in a way that allows AI to "read the manual" and immediately start building without hallucinating non-existent APIs.
@@ -31,8 +31,8 @@ Traditional web development requires AI to understand complex codebases, compone
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/cellebris/schemata.git
-    cd schemata
+    git clone https://github.com/nexical/astrical.git
+    cd astrical
     ```
 
 2.  Install dependencies:

@@ -1,7 +1,7 @@
 {
-  "name": "schemata-astro-theme",
+  "name": "astrical",
   "version": "1.0.0",
-  "description": "schemata Astro Theme",
+  "description": "Astrical",
   "type": "module",
   "engines": {
     "node": ">= 22.0.0"

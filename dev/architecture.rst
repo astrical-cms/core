@@ -7,9 +7,9 @@ Architecture Document
 
 **Project Purpose**
 
-Schemata is an open-source [Astro](https://astro.build/) theme and framework designed specifically for **AI-driven development**. It decouples content and structure from code, allowing AI agents to build, update, and manage complex websites purely by manipulating structured YAML data.
+Astrical is an open-source [Astro](https://astro.build/) theme and framework designed specifically for **AI-driven development**. It decouples content and structure from code, allowing AI agents to build, update, and manage complex websites purely by manipulating structured YAML data.
 
-Traditional web development requires AI to understand complex codebases, component logic, and framework nuances. Schemata flips this model:
+Traditional web development requires AI to understand complex codebases, component logic, and framework nuances. Astrical flips this model:
 
 **Core Philosophy**
 
