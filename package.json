@@ -23,7 +23,8 @@
     "validate-content": "tsx scripts/validate-content.ts",
     "validate-themes": "tsx scripts/validate-themes.ts",
     "validate": "npm run generate-spec && npm run validate-content && npm run validate-themes",
-    "analyze": "tsx scripts/parse-website.ts"
+    "analyze": "tsx scripts/parse-website.ts",
+    "modules": "tsx scripts/modules.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.10",

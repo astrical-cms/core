@@ -11,6 +11,7 @@ import cloudflare from '@astrojs/cloudflare';
 import icon from 'astro-icon';
 import compress from 'astro-compress';
 import siteConfig from './plugins/config';
+import moduleIntegration from './plugins/modules';
 import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin, lazyImagesRehypePlugin } from './src/utils/frontmatter';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,6 +94,7 @@ export default defineConfig({
     siteConfig({
       config: './content/config.yaml',
     }),
+    moduleIntegration(),
   ],
 
   image: {
@@ -110,6 +112,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './src'),
+        '@modules': path.resolve(__dirname, './modules'),
       },
     },
     ssr: {

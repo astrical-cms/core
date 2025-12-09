@@ -63,6 +63,8 @@ import { UI } from 'site:config';
 import { getVar, setVar, checkVar } from '~/utils/cache';
 import { isObject, mergeDeep } from '~/utils/utils';
 
+const MODULES_DIR = path.resolve(process.cwd(), 'modules');
+
 /**
  * Loads and merges theme and user style configurations.
  *
@@ -85,6 +87,23 @@ function loadStyles(): Record<string, unknown> {
   const themeStylePath = path.resolve(process.cwd(), `src/themes/${theme}/style.yaml`);
   const userStylePath = path.resolve(process.cwd(), 'content/style.yaml');
 
+  // Load module styles
+  let moduleStyles = {};
+  if (fs.existsSync(MODULES_DIR)) {
+    try {
+      const modules = fs.readdirSync(MODULES_DIR);
+      for (const moduleName of modules) {
+        const moduleStylePath = path.join(MODULES_DIR, moduleName, 'theme/style.yaml');
+        if (fs.existsSync(moduleStylePath)) {
+          const styles = yaml.load(fs.readFileSync(moduleStylePath, 'utf-8')) || {};
+          moduleStyles = mergeDeep(moduleStyles, styles);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading module styles:', e);
+    }
+  }
+
   // Load theme styles
   let themeStyles = {};
   try {
@@ -106,7 +125,8 @@ function loadStyles(): Record<string, unknown> {
   }
 
   // Merge theme and user styles with proper precedence
-  const mergedStyles = mergeDeep({}, themeStyles, userStyles);
+  // Precedence: User > Theme > Module
+  const mergedStyles = mergeDeep({}, moduleStyles, themeStyles, userStyles);
 
   // Cache merged styles for performance in production
   setVar(cacheKey, mergedStyles);

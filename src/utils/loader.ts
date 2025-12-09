@@ -63,6 +63,8 @@ import path from 'path';
 import yaml from 'js-yaml';
 import { getVar, setVar, checkVar } from '~/utils/cache';
 
+const MODULES_DIR = path.resolve(process.cwd(), 'modules');
+
 /**
  * Recursively loads all YAML files from a directory and its subdirectories.
  *
@@ -125,6 +127,41 @@ function loadContent(rootDir: string) {
 }
 
 /**
+ * Loads content from all valid modules in the modules directory.
+ *
+ * Iterates through all subdirectories in the modules directory, checks for
+ * a 'content' folder, and loads its YAML files. Explicitly excludes
+ * 'menus' content as navigation should remain site-specific.
+ *
+ * @returns Record containing merged content data from all modules
+ */
+function loadModuleContent() {
+  let moduleContent: Record<string, Record<string, unknown>> = {};
+
+  if (!fs.existsSync(MODULES_DIR)) {
+    return moduleContent;
+  }
+
+  const modules = fs.readdirSync(MODULES_DIR);
+
+  for (const moduleName of modules) {
+    const moduleContentDir = path.join(MODULES_DIR, moduleName, 'content');
+    if (fs.existsSync(moduleContentDir) && fs.statSync(moduleContentDir).isDirectory()) {
+      const content = loadContent(moduleContentDir);
+
+      // Enforce constraint: Modules cannot contribute menus
+      if (content['menus']) {
+        delete content['menus'];
+      }
+
+      moduleContent = merge(moduleContent, content);
+    }
+  }
+
+  return moduleContent;
+}
+
+/**
  * Retrieves and processes content data with caching and shared component resolution.
  *
  * Loads content data from YAML files, resolves shared component references,
@@ -141,8 +178,14 @@ function getContent(): Record<string, unknown> {
     return getVar(cacheKey) as Record<string, unknown>;
   }
 
-  // Load raw content from YAML files
-  const content = loadContent(SITE.contentDir);
+  // Load content from modules first (base layer)
+  const moduleContent = loadModuleContent();
+
+  // Load project content (override layer)
+  const projectContent = loadContent(SITE.contentDir);
+
+  // Merge project content over module content
+  const content = merge(moduleContent, projectContent);
 
   // Extract pages and shared components for processing
   const pages = content['pages'] || {};

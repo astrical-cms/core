@@ -14,9 +14,23 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": [
+        "src/*"
+      ],
+      "@modules/*": [
+        "modules/*"
+      ]
     }
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": [".wrangler/", ".astro/", "dist/", "eslint.config.js", "node_modules"]
+  "include": [
+    ".astro/types.d.ts",
+    "**/*"
+  ],
+  "exclude": [
+    ".wrangler/",
+    ".astro/",
+    "dist/",
+    "eslint.config.js",
+    "node_modules"
+  ]
 }

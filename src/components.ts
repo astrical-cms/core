@@ -90,6 +90,11 @@ const formModules = import.meta.glob('~/components/forms/**/*.astro', { eager: t
 // Includes layout components like Header, Footer, SingleColumn, TwoColumn, etc.
 const sectionModules = import.meta.glob('~/components/sections/**/*.astro', { eager: true });
 
+// Discover and load all module components
+const moduleWidgetModules = import.meta.glob('@modules/*/src/components/widgets/**/*.astro', { eager: true });
+const moduleFormModules = import.meta.glob('@modules/*/src/components/forms/**/*.astro', { eager: true });
+const moduleSectionModules = import.meta.glob('@modules/*/src/components/sections/**/*.astro', { eager: true });
+
 /**
  * Supported component types mapping for dynamic instantiation.
  *
@@ -105,6 +110,8 @@ const sectionModules = import.meta.glob('~/components/sections/**/*.astro', { ea
 export const supportedTypes: Record<string, AstroComponentFactory> = {
   ...createComponentMap(widgetModules),
   ...createComponentMap(formModules),
+  ...createComponentMap(moduleWidgetModules),
+  ...createComponentMap(moduleFormModules),
 };
 
 /**
@@ -121,4 +128,7 @@ export const supportedTypes: Record<string, AstroComponentFactory> = {
  * - TwoColumn: Two column content layout
  * - ThreeColumn: Three column content layout
  */
-export const supportedLayouts: Record<string, AstroComponentFactory> = createComponentMap(sectionModules);
+export const supportedLayouts: Record<string, AstroComponentFactory> = {
+  ...createComponentMap(sectionModules),
+  ...createComponentMap(moduleSectionModules),
+};
