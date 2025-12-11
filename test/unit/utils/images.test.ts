@@ -52,5 +52,23 @@ describe('src/utils/images', () => {
             expect(result.images).toHaveLength(1);
             expect(result.images![0].url).toContain('https://example.com/image.png');
         });
+
+        it('should handle empty images list', async () => {
+            const og = { images: [] };
+            const result = await adaptOpenGraphImages(og as any, new URL('https://site.com'));
+            expect(result).toEqual(og);
+        });
+
+        it('should handle missing image url', async () => {
+            const og = { images: [{ width: 100 }] };
+            const result = await adaptOpenGraphImages(og as any, new URL('https://site.com'));
+            expect(result.images![0].url).toBe('');
+        });
+
+        it('should handle image resolution failure', async () => {
+            const og = { images: [{ url: '~/assets/images/fail.png' }] };
+            const result = await adaptOpenGraphImages(og as any, new URL('https://site.com'));
+            expect(result.images![0].url).toBe('');
+        });
     });
 });

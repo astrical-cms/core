@@ -50,6 +50,30 @@ describe('src/utils/mailgun', () => {
         );
     });
 
+
+
+    it('should handle multiple recipients', async () => {
+        mockFetch.mockResolvedValue({
+            ok: true,
+            json: async () => ({ id: 'email-id', message: 'Queued' })
+        });
+
+        await sendEmail({
+            to: ['user1@example.com', 'user2@example.com'],
+            subject: 'Test Subject',
+            text: 'Hello',
+            html: '<p>Hello</p>'
+        });
+
+        expect(mockFetch).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+                body: expect.anything()
+            })
+        );
+        // Deep inspection of FormData if needed, but array branch is triggered
+    });
+
     it('should handle attachments', async () => {
         mockFetch.mockResolvedValue({
             ok: true,

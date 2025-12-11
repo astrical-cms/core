@@ -1,8 +1,20 @@
 
 import { describe, it, expect } from 'vitest';
-import { trim, isObject, mergeDeep, toUiAmount } from '~/utils/utils';
+import { trim, isObject, mergeDeep, toUiAmount, getFormattedDate } from '~/utils/utils';
 
 describe('src/utils/utils', () => {
+    describe('getFormattedDate()', () => {
+        it('should format date', () => {
+            const date = new Date('2023-01-01T00:00:00Z');
+            expect(getFormattedDate(date)).toBeDefined();
+        });
+
+        it('should return empty string for invalid date', () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(getFormattedDate(undefined as any)).toBe('');
+        });
+    });
+
     describe('trim()', () => {
         it('should trim default whitespace', () => {
             expect(trim('  hello  ')).toBe('hello');
@@ -55,6 +67,12 @@ describe('src/utils/utils', () => {
             expect(mergeDeep(target, source)).toEqual({ a: { x: 1, y: 2 } });
         });
 
+        it('should merge new nested objects', () => {
+            const target = {};
+            const source = { a: { y: 2 } };
+            expect(mergeDeep(target, source)).toEqual({ a: { y: 2 } });
+        });
+
         it('should overwrite primitive values', () => {
             const target = { a: 1 };
             const source = { a: 2 };
@@ -66,6 +84,10 @@ describe('src/utils/utils', () => {
             const source1 = { b: 2 };
             const source2 = { c: 3 };
             expect(mergeDeep(target, source1, source2)).toEqual({ a: 1, b: 2, c: 3 });
+        });
+
+        it('should ignore source if target is not object', () => {
+            expect(mergeDeep(1, { a: 2 })).toBe(1);
         });
     });
 

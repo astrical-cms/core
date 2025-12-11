@@ -51,6 +51,21 @@ describe('src/utils/router', () => {
             expect(layout.metadata).toEqual({ title: 'Meta Title' });
         });
 
+        it('should handle metadata without layout configurations', () => {
+            const mockPage = {
+                metadata: {
+                    title: 'Just Title'
+                }
+            };
+            (getSpecs as any).mockReturnValue({ 'simple-page': mockPage });
+
+            const layout = getLayout('simple-page');
+            expect(layout.announcement).toBeUndefined();
+            expect(layout.header).toBeUndefined();
+            expect(layout.footer).toBeUndefined();
+            expect(layout.metadata).toEqual({ title: 'Just Title' });
+        });
+
         it('should return empty props if page not found', () => {
             (getSpecs as any).mockReturnValue({});
             expect(getLayout('missing-page')).toEqual({});

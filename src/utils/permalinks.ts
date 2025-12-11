@@ -132,12 +132,10 @@ export const getPermalink = (slug = '', type = 'page'): string => {
   // Generate permalink based on content type
   switch (type) {
     case 'home':
-      permalink = getHomePermalink();
-      break;
+      return getHomePermalink();
 
     case 'asset':
-      permalink = getAsset(slug);
-      break;
+      return getAsset(slug);
 
     case 'page':
     default:

@@ -17,6 +17,20 @@ describe('src/utils/forms', () => {
         vi.clearAllMocks();
     });
 
+
+
+    it('should handle array form values', async () => {
+        (getSpecs as any).mockReturnValue({
+            'contact': { recipients: ['admin@example.com'] }
+        });
+
+        await formProcessor('contact', { interests: ['coding', 'design'] }, []);
+
+        expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({
+            text: expect.stringContaining('interests: coding, design'),
+        }));
+    });
+
     it('should process form and send email', async () => {
         // Mock getSpecs to return form config
         (getSpecs as any).mockReturnValue({

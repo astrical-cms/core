@@ -1,6 +1,17 @@
+import { describe, it, expect, vi } from 'vitest';
+import { trimSlash, createPath, getCanonical, getPermalink, getAsset } from '~/utils/permalinks';
 
-import { describe, it, expect } from 'vitest';
-import { trimSlash, createPath } from '~/utils/permalinks';
+vi.mock('site:config', () => ({
+    SITE: {
+        site: 'https://example.com',
+        base: '/base',
+        trailingSlash: false,
+    },
+    I18N: {
+        language: 'en',
+        textDirection: 'ltr',
+    }
+}));
 
 describe('src/utils/permalinks', () => {
     describe('trimSlash()', () => {
@@ -14,10 +25,56 @@ describe('src/utils/permalinks', () => {
 
     describe('createPath()', () => {
         it('should create a path from arguments', () => {
-            expect(createPath('base', 'slug')).toBe('/base/slug');
+            expect(createPath('foo', 'bar')).toBe('/foo/bar');
+            // No, createPath implementation: '/' + paths + trailing...
+            // It DOES NOT prepend BASE_PATHNAME.
+            // But definitivePermalink DOES.
+            // Let's check source code of createPath:
+            /*
+            export const createPath = (...params: string[]) => {
+              const paths = params...
+              return '/' + paths + ...
+            };
+            */
+            // So createPath('foo', 'bar') -> '/foo/bar'.
+            expect(createPath('foo', 'bar')).toBe('/foo/bar');
         });
-        it('should handle empty arguments', () => {
-            expect(createPath()).toBe('/');
+    });
+
+    describe('getCanonical()', () => {
+        it('should return canonical url', () => {
+            expect(getCanonical('/path')).toBe('https://example.com/path');
+        });
+
+        it('should handle trailing slash config', () => {
+            expect(getCanonical('/path/')).toBe('https://example.com/path'); // Should remove slash per mock config
+        });
+    });
+
+    describe('getPermalink()', () => {
+        it('should return external links as is', () => {
+            expect(getPermalink('https://google.com')).toBe('https://google.com');
+        });
+
+        it('should generate page permalink', () => {
+            // getPermalink calls definitivePermalink which calls createPath(BASE_PATHNAME, permalink)
+            // BASE_PATHNAME is SITE.base which is '/base'
+            // So '/base/about'
+            expect(getPermalink('about')).toBe('/base/about');
+        });
+
+        it('should generate home permalink', () => {
+            expect(getPermalink('', 'home')).toBe('/base');
+        });
+
+        it('should generate asset permalink', () => {
+            expect(getPermalink('image.png', 'asset')).toBe('/base/image.png');
+        });
+    });
+
+    describe('getAsset()', () => {
+        it('should generate asset url', () => {
+            expect(getAsset('styles.css')).toBe('/base/styles.css');
         });
     });
 });

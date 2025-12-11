@@ -65,5 +65,100 @@ describe('src/utils/loader', () => {
         it('should throw error for missing spec type', () => {
             expect(() => getSpecs('missing')).toThrow('Data specifications are missing requested type: missing');
         });
+
+        it('should resolve shared components', () => {
+            // Mock content with shared components and pages using them
+            (fs.readdirSync as any).mockImplementation((dir: string) => {
+                if (dir === '/mock/content') return ['pages', 'shared'];
+                if (dir === '/mock/content/pages') return ['page.yaml'];
+                if (dir === '/mock/content/shared') return ['button.yaml'];
+                return [];
+            });
+
+            (yaml.load as any).mockImplementation((content: string) => {
+                if (content.includes('page')) return {
+                    sections: [{ component: 'button', text: 'Click me' }]
+                };
+                if (content.includes('button')) return {
+                    type: 'Button', color: 'blue', text: 'Default'
+                };
+                return {};
+            });
+
+            (fs.readFileSync as any).mockImplementation((path: string) => {
+                if (path.includes('page.yaml')) return 'page content';
+                if (path.includes('button.yaml')) return 'button content';
+                return '';
+            });
+
+            // Reset cache to force reload
+            const pages = getSpecs('pages');
+            expect((pages as any).page.sections[0]).toEqual({
+                type: 'Button',
+                color: 'blue',
+                text: 'Click me' // Override
+            });
+        });
+
+        it('should process Form components', () => {
+            // Mock content having a form
+            (fs.readdirSync as any).mockImplementation((dir: string) => {
+                if (dir === '/mock/content') return ['pages'];
+                if (dir === '/mock/content/pages') return ['contact.yaml'];
+                return [];
+            });
+            (yaml.load as any).mockReturnValue({
+                form: { type: 'Form', name: 'contact-form' }
+            });
+
+            const forms = getSpecs('forms');
+            expect(forms['contact-form']).toBeDefined();
+        });
+    });
+
+    describe('Module loading', () => {
+        it('should load content from modules but exclude menus', () => {
+            (fs.existsSync as any).mockReturnValue(true); // Modules exist
+            (fs.readdirSync as any).mockImplementation((dir: string) => {
+                if (dir.endsWith('modules')) return ['blog'];
+                if (dir.includes('modules/blog/content')) return ['posts.yaml', 'menus.yaml'];
+                if (dir === '/mock/content') return [];
+                return [];
+            });
+            (fs.statSync as any).mockImplementation(() => ({ isDirectory: () => true }));
+
+            // We need to trigger loadModuleContent which is called by getContent
+            // But we can't inspect internal state easily.
+            // We can check if 'posts' are loaded (if we map them to spec type)
+            // Implementation detail: module content is merged. 
+            // 'posts.yaml' -> content['posts']...
+
+            // Reset cache
+            (global as any).import = { meta: { env: { DEV: true } } }; // Force reload
+
+            // Setup module content
+            (fs.readdirSync as any).mockImplementation((dir: string) => {
+                if (dir.endsWith('modules')) return ['blog'];
+                if (dir.endsWith('modules/blog/content')) return ['posts'];
+                if (dir.endsWith('modules/blog/content/posts')) return ['post1.yaml'];
+                if (dir === '/mock/content') return [];
+                return [];
+            });
+
+            (fs.statSync as any).mockImplementation((path: string) => ({
+                isDirectory: () => !path.endsWith('.yaml')
+            }));
+            (fs.readFileSync as any).mockReturnValue('title: Post');
+            (yaml.load as any).mockImplementation((_content: string) => {
+                return { title: 'Post' };
+            });
+
+            // getSpecs('posts') should resolve posts from module
+            const posts = getSpecs('posts');
+            expect(posts.post1).toBeDefined(); // specPath from posts/post1.yaml -> post1'
+
+            // Should NOT have loaded menus
+            expect(() => getSpecs('menus')).toThrow();
+        });
     });
 });

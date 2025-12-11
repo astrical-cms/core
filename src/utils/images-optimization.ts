@@ -111,6 +111,7 @@ export interface ImageProps extends Omit<HTMLAttributes<'img'>, 'src'> {
   widths?: number[] | null;
   aspectRatio?: string | number | null;
   objectPosition?: string;
+  background?: string;
 }
 
 /**
@@ -455,6 +456,7 @@ export async function getImagesOptimized(
     widths,
     layout = 'constrained',
     style = '',
+    background,
     ...rest
   }: ImageProps,
   transform: ImagesOptimizer = () => Promise.resolve([])
@@ -519,6 +521,7 @@ export async function getImagesOptimized(
         aspectRatio: aspectRatio,
         objectPosition: objectPosition,
         layout: layout,
+        background: background,
       })}${style ?? ''}`,
       ...rest,
     },
