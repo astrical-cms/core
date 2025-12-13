@@ -121,16 +121,18 @@ export interface MetaData {
  *
  * @property title - Page title override
  * @property description - Page description override
- * @property announcement - Announcement banner configuration
- * @property header - Header navigation configuration
- * @property footer - Footer navigation configuration
+ * @property announcement - Display Announcement banner?
+ * @property header - Display Header navigation?
+ * @property footer - Display Footer navigation?
+ * @property access - Array of roles allowed to access the page (e.g., ['public'], ['admin'])
  */
 export interface PageMetaData {
   title?: string;
   description?: string;
-  announcement?: Record<string, unknown>;
-  header?: Record<string, unknown>;
-  footer?: Record<string, unknown>;
+  announcement?: boolean;
+  header?: boolean;
+  footer?: boolean;
+  access?: Array<string>;
 }
 
 /**

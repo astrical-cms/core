@@ -11,7 +11,7 @@
  * - Page-specific layout configuration extraction
  * - Metadata processing and organization
  * - Integration with YAML data loading system
- * - Support for announcement, header, and footer customization
+ * - Support for announcement, header, footer, and access customization
  *
  * Component Integration:
  * - getSpecs: Data loading utility for retrieving YAML configurations
@@ -31,7 +31,7 @@
  * - Integrates with Astro's getStaticPaths for dynamic routes
  *
  * Layout Configuration:
- * - Extracts announcement, header, and footer settings
+ * - Extracts announcement, header, footer, and access settings
  * - Processes page metadata for SEO and layout purposes
  * - Separates layout properties from general metadata
  * - Provides default values for missing configurations
@@ -73,7 +73,7 @@ export function routes(): Array<Card> {
  * Extracts and processes layout configuration for a specific page.
  *
  * Takes a page name and retrieves its metadata configuration, separating
- * layout-specific properties (announcement, header, footer) from general
+ * layout-specific properties (announcement, header, footer, access) from general
  * metadata. This allows pages to customize their layout components
  * independently from SEO and content metadata.
  *
@@ -105,6 +105,12 @@ export function getLayout(name: string | undefined): Record<string, unknown> {
       if (Object.hasOwn(metadata, 'footer')) {
         props['footer'] = metadata['footer'];
         delete metadata['footer'];
+      }
+
+      // Extract access configuration if present
+      if (Object.hasOwn(metadata, 'access')) {
+        props['access'] = metadata['access'];
+        delete metadata['access'];
       }
 
       // Store remaining metadata as general metadata
