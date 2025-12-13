@@ -65,7 +65,7 @@ interface EmailParams {
   subject: string;
   text: string;
   html: string;
-  attachments?: { filename: string; data: Buffer }[];
+  attachments?: { filename: string; data: Uint8Array }[];
 }
 
 /**
@@ -113,12 +113,9 @@ export async function sendEmail({ to, subject, text, html, attachments }: EmailP
   // Process file attachments if provided
   if (attachments && attachments.length > 0) {
     attachments.forEach((attachment) => {
-      // Convert Node.js Buffer to Uint8Array then to ArrayBuffer for Cloudflare compatibility
-      const uint8Array = new Uint8Array(attachment.data);
-      const arrayBuffer = uint8Array.buffer;
-
       // Create Blob for attachment with proper MIME type
-      const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+      // Blob constructor accepts ArrayBuffer, ArrayBufferView (Uint8Array), Blob, or string
+      const blob = new Blob([attachment.data as unknown as BlobPart], { type: 'application/octet-stream' });
 
       // Add attachment to form data with original filename
       formData.append('attachment', blob, attachment.filename);

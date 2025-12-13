@@ -14,7 +14,7 @@ export class MailgunHandler implements FormHandler {
   async handle(
     formName: string,
     data: Record<string, string | string[]>,
-    attachments: { filename: string; data: Buffer }[],
+    attachments: { filename: string; data: Uint8Array }[],
     config?: { recipients?: string | string[] }
   ): Promise<void> {
     if (!config?.recipients) {
