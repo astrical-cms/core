@@ -6,8 +6,7 @@
  * system to retrieve form-specific settings and uses the FormHandlerRegistry for extensible processing.
  */
 
-import { FORM_HANDLERS } from 'site:config';
-import { getSpecs } from '~/utils/loader';
+import { FORM_HANDLERS, FORMS } from 'site:config';
 import { formHandlers } from '~/form-registry';
 
 /**
@@ -24,11 +23,10 @@ import { formHandlers } from '~/form-registry';
 export async function formProcessor(
   name: string,
   values: Record<string, string | string[]>,
-  attachments: { filename: string; data: Buffer }[]
+  attachments: { filename: string; data: Uint8Array }[]
 ) {
-  // Get form configuration
-  const forms = getSpecs('forms');
-  const form = forms[name] as { recipients?: string | string[] };
+  // Get form configuration from build-time bundle
+  const form = FORMS[name] || {};
 
   // Identify handlers to run
   // We use the defaults list from site configuration
@@ -43,16 +41,19 @@ export async function formProcessor(
       continue;
     }
 
-    // Check if handler is explicitly disabled in config
-    const handlerConfig = FORM_HANDLERS.handlers?.[handlerName] || {};
-    if (handlerConfig.enabled === false) {
+    // Check if handler is explicitly disabled in global config
+    const globalHandlerConfig = FORM_HANDLERS.handlers?.[handlerName] || {};
+    if (globalHandlerConfig.enabled === false) {
       continue;
     }
 
-    // Merge form-specific recipients into handler config
+    // Merge global handler config with form-specific handler overrides
+    // This allows forms to specify recipients, table names, or any handler-specific setting
+    const formHandlerConfig = form.handlers?.[handlerName] || {};
+
     const executionConfig = {
-      ...handlerConfig,
-      recipients: form?.recipients,
+      ...globalHandlerConfig,
+      ...formHandlerConfig,
     };
 
     try {

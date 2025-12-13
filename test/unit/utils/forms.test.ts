@@ -6,16 +6,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Helper to mock dependencies
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockDependencies = (handlerNames: string[] | undefined, handlersConfig: any) => {
+const mockDependencies = (handlerNames: string[] | undefined, handlersConfig: any, formsConfig: any = {}) => {
     vi.doMock('site:config', () => ({
         FORM_HANDLERS: {
             defaults: handlerNames,
             handlers: handlersConfig
-        }
-    }));
-
-    vi.doMock('~/utils/loader', () => ({
-        getSpecs: vi.fn(),
+        },
+        FORMS: formsConfig
     }));
 
     vi.doMock('astro:env/server', () => ({
@@ -41,16 +38,17 @@ describe('src/utils/forms', () => {
     });
 
     it('should execute default handler', async () => {
-        mockDependencies(['test-handler'], { 'test-handler': { enabled: true } });
+        const formsConfig = {
+            'contact': {
+                handlers: {
+                    'test-handler': { recipient: 'override@example.com' }
+                }
+            }
+        };
+        mockDependencies(['test-handler'], { 'test-handler': { enabled: true, recipient: 'default@example.com' } }, formsConfig);
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({
-            'contact': { recipients: ['admin@example.com'] }
-        });
 
         const mockHandler = {
             name: 'test-handler',
@@ -66,7 +64,7 @@ describe('src/utils/forms', () => {
             'contact',
             { name: 'John' },
             [],
-            expect.objectContaining({ recipients: ['admin@example.com'], enabled: true })
+            expect.objectContaining({ recipient: 'override@example.com', enabled: true })
         );
     });
 
@@ -75,10 +73,6 @@ describe('src/utils/forms', () => {
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({ 'contact': {} });
 
         const mockHandler = { name: 'disabled-handler', handle: vi.fn() };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,10 +89,6 @@ describe('src/utils/forms', () => {
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({ 'contact': {} });
 
         const mockHandler = { name: 'test-handler', handle: vi.fn() };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,10 +104,6 @@ describe('src/utils/forms', () => {
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({ 'contact': {} });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (formHandlers.get as any).mockReturnValue(undefined);
@@ -135,10 +121,6 @@ describe('src/utils/forms', () => {
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({ 'contact': {} });
 
         const mockHandler = {
             name: 'test-handler',
@@ -155,10 +137,7 @@ describe('src/utils/forms', () => {
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({ 'contact': {} });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (formHandlers.get as any).mockReturnValue(undefined); // mailgun missing mock (warns)
 
@@ -173,10 +152,6 @@ describe('src/utils/forms', () => {
 
         const { formProcessor } = await import('~/utils/forms');
         const { formHandlers } = await import('~/form-registry');
-        const { getSpecs } = await import('~/utils/loader');
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (getSpecs as any).mockReturnValue({ 'contact': {} });
 
         const mockHandler = {
             name: 'test-handler',

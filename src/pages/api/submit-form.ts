@@ -87,6 +87,16 @@ export const POST: APIRoute = async ({ request }) => {
     // Parse incoming form data from the request
     const formData = await request.formData();
 
+    // Check honeypot field for spam protection
+    const botField = formData.get('bot-field');
+    if (botField) {
+      // Return 200 OK to fool bots into thinking submission was successful
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Extract and validate the form name (required for processing)
     const formName = formData.get('form-name') as string;
 
@@ -100,7 +110,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Initialize data structures for form processing
     const formValues: Record<string, string | string[]> = {};
-    const attachments: { filename: string; data: Buffer }[] = [];
+    const attachments: { filename: string; data: Uint8Array }[] = [];
 
     // Process each form field, excluding special fields
     for (const [key, value] of formData.entries()) {
@@ -113,7 +123,7 @@ export const POST: APIRoute = async ({ request }) => {
         if (value instanceof File) {
           attachments.push({
             filename: value.name,
-            data: Buffer.from(await value.arrayBuffer()),
+            data: new Uint8Array(await value.arrayBuffer()),
           });
           formValues[fieldName] = `Attached file: ${value.name}`;
         }
