@@ -91,7 +91,7 @@
  * - Data attributes for JavaScript interactions and testing
  */
 
-import type { CallToAction } from '~/types';
+import type { CallToAction, MenuLink } from '~/types';
 import { Icon } from 'astro-icon/components';
 import Logo from '~/components/Logo.astro';
 import ToggleTheme from '~/components/ui/ToggleTheme.astro';
@@ -99,30 +99,6 @@ import ToggleMenu from '~/components/ui/ToggleMenu.astro';
 import Button from '~/components/ui/Button.astro';
 import { trimSlash, getHomePermalink } from '~/utils/permalinks';
 import { getClasses } from '~/utils/theme';
-
-/**
- * Link interface for navigation items
- *
- * @property text - Display text for the link
- * @property href - URL the link points to
- * @property ariaLabel - Accessible name for the link
- * @property icon - Optional icon identifier
- */
-export interface Link {
-  text?: string;
-  href?: string;
-  ariaLabel?: string;
-  icon?: string;
-}
-
-/**
- * MenuLink extends Link with nested links for dropdown menus
- *
- * @property links - Array of submenu items
- */
-export interface MenuLink extends Link {
-  links?: Array<MenuLink>;
-}
 
 /**
  * Component Props Interface

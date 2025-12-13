@@ -67,34 +67,9 @@
  * - Data attributes for test automation
  */
 
+import type { Link, Links } from '~/types';
 import { Icon } from 'astro-icon/components';
 import { getClasses } from '~/utils/theme';
-
-/**
- * Link interface for footer navigation items
- *
- * @property text - Link display text (can contain HTML)
- * @property href - URL the link points to
- * @property ariaLabel - Accessible name for the link
- * @property icon - Icon identifier for social media links
- */
-export interface Link {
-  text?: string;
-  href?: string;
-  ariaLabel?: string;
-  icon?: string;
-}
-
-/**
- * Links interface for grouped navigation sections
- *
- * @property title - Group title (can contain HTML)
- * @property links - Array of Link objects in this group
- */
-export interface Links {
-  title?: string;
-  links: Array<Link>;
-}
 
 /**
  * Component Props Interface

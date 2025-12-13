@@ -37,7 +37,7 @@
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 
 // Re-export page-related types for centralized access
-export type { MetaData, Page, Section } from '~/types/page';
+export type { MetaData, Page, Section, Link, MenuLink, Links } from '~/types/page';
 
 // Re-export form-related types for centralized access
 export type { Option, FormItem, BaseField, FormHandler } from '~/types/form';

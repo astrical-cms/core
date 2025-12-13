@@ -162,3 +162,38 @@ export interface Section {
   classes?: Record<string, string>;
   components: Record<string, Array<Record<string, unknown>>>;
 }
+
+/**
+ * Link interface for navigation items
+ *
+ * @property text - Display text for the link (can contain HTML)
+ * @property href - URL the link points to
+ * @property ariaLabel - Accessible name for the link
+ * @property icon - Optional icon identifier
+ */
+export interface Link {
+  text?: string;
+  href?: string;
+  ariaLabel?: string;
+  icon?: string;
+}
+
+/**
+ * MenuLink extends Link with nested links for dropdown menus
+ *
+ * @property links - Array of submenu items
+ */
+export interface MenuLink extends Link {
+  links?: Array<MenuLink>;
+}
+
+/**
+ * Links interface for grouped navigation sections (e.g., in footer)
+ *
+ * @property title - Group title (can contain HTML)
+ * @property links - Array of Link objects in this group
+ */
+export interface Links {
+  title?: string;
+  links: Array<Link>;
+}

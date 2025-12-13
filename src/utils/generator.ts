@@ -49,11 +49,8 @@
  * - Static site generation path enumeration
  */
 
-import type { LoaderConfig as Component, CallToAction, FormItem } from '~/types';
+import type { LoaderConfig as Component, CallToAction, FormItem, MenuLink, Link, Links } from '~/types';
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
-
-import type { MenuLink } from '~/components/page/Header.astro';
-import type { Link, Links } from '~/components/page/Footer.astro';
 import { supportedTypes } from '~/components';
 import { getSpecs } from '~/utils/loader';
 import { routes } from '~/utils/router';
