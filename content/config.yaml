@@ -43,5 +43,15 @@ analytics:
     facebook:
       id: 'XXXXXXXXXXXXXX'
 
+auth:
+  module: null
+  loginUrl: '/login' # Where Core redirects 401s
+  accessDeniedUrl: '/403' # Where Core redirects 403s
+  roles: # Just definitions for validation/UI
+    - name: 'admin'
+      label: 'Administrator'
+    - name: 'member'
+      label: 'Standard Member'
+
 ui:
   theme: 'default' # Specifies the active theme directory in `src/themes/`
