@@ -112,5 +112,5 @@ declare module 'site:config' {
    * Maps form name -> generic handler configuration.
    * This is bundled at build time to avoid runtime filesystem access.
    */
-  export const FORMS: Record<string, { handlers: Record<string, any> }>;
+  export const FORMS: Record<string, { handlers: Record<string, unknown> }>;
 }

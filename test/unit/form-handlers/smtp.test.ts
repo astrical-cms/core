@@ -17,6 +17,10 @@ vi.mock('~/utils/utils', () => ({
     toUiAmount: vi.fn()
 }));
 
+vi.mock('astro:env/server', () => ({
+    getSecret: vi.fn((key) => process.env[key])
+}));
+
 // Mock nodemailer
 const mockSendMail = vi.fn().mockResolvedValue({ messageId: 'test-id' });
 const mockCreateTransport = vi.fn().mockReturnValue({
@@ -70,7 +74,7 @@ describe('SMTPHandler', () => {
     describe('Node.js Environment', () => {
         beforeEach(async () => {
             const utils = await import('~/utils/utils');
-            (utils.isEdge as any).mockReturnValue(false);
+            (utils.isEdge as unknown as { mockReturnValue: (val: boolean) => void }).mockReturnValue(false);
         });
 
         it('should send email using nodemailer via createTransport', async () => {
@@ -98,18 +102,68 @@ describe('SMTPHandler', () => {
             });
         });
 
+        it('should handle array data values', async () => {
+            const data = { skills: ['Node', 'Edge'] };
+            await handler.handle('contact', data, [], { recipients: 'test@test.com' });
+
+            expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+                text: expect.stringContaining('skills: Node, Edge')
+            }));
+        });
+
+        it('should use default empty strings when configuration is missing', async () => {
+            // Unset env vars to force default fallbacks
+            delete process.env.SMTP_HOST;
+            delete process.env.SMTP_PORT;
+            delete process.env.SMTP_USER;
+            delete process.env.SMTP_PASS;
+            delete process.env.SMTP_FROM;
+
+            await handler.handle('contact', {}, [], { recipients: 'test@test.com' });
+
+            expect(mockCreateTransport).toHaveBeenCalledWith(expect.objectContaining({
+                host: '',
+                port: 587, // Default port
+                auth: { user: '', pass: '' }
+            }));
+            expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+                from: 'noreply@example.com' // Default from
+            }));
+        });
+
+        it('should log warning and return if no recipients configured', async () => {
+            const consoleSpy = vi.spyOn(console, 'warn');
+            await handler.handle('contact', {}, [], {});
+            expect(consoleSpy).toHaveBeenCalledWith("SMTPHandler: No recipients configured for form 'contact'.");
+        });
+
         it('should handle SMTP errors gracefully', async () => {
             mockSendMail.mockRejectedValueOnce(new Error('Auth failed'));
 
             await expect(handler.handle('contact', {}, [], { recipients: 'admin@example.com' }))
                 .rejects.toThrow('Node SMTP Error: Auth failed');
         });
+
+        it('should handle non-Error objects gracefully', async () => {
+            mockSendMail.mockRejectedValueOnce('String Error');
+
+            await expect(handler.handle('contact', {}, [], { recipients: 'admin@example.com' }))
+                .rejects.toThrow('Node SMTP Error: String Error');
+        });
+
+        it('should send email via Node with array of recipients', async () => {
+            await handler.handle('contact', {}, [], { recipients: ['a@node.com', 'b@node.com'] });
+
+            expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+                to: 'a@node.com,b@node.com'
+            }));
+        });
     });
 
     describe('Edge Environment (Cloudflare)', () => {
         beforeEach(async () => {
             const utils = await import('~/utils/utils');
-            (utils.isEdge as any).mockReturnValue(true);
+            (utils.isEdge as unknown as { mockReturnValue: (val: boolean) => void }).mockReturnValue(true);
         });
 
         it('should send email using worker-mailer via connect', async () => {
@@ -118,6 +172,18 @@ describe('SMTPHandler', () => {
             const config = { recipients: ['edge@example.com'], secure: true };
 
             await handler.handle('contact', data, attachments, config);
+
+            expect(mockWorkerConnect).toHaveBeenCalledWith({
+                transport: {
+                    host: 'smtp.test.com',
+                    port: 587,
+                    secure: true,
+                    auth: { user: 'user', pass: 'pass' }
+                },
+                defaults: {
+                    from: { name: 'Website Form', address: 'sender@test.com' }
+                }
+            });
 
             expect(mockWorkerConnect).toHaveBeenCalledWith({
                 transport: {
@@ -144,11 +210,40 @@ describe('SMTPHandler', () => {
             });
         });
 
+        it('should send email with no attachments in Edge', async () => {
+            const data = { name: 'No Attachments' };
+            const config = { recipients: ['edge@example.com'] };
+
+            await handler.handle('contact', data, [], config);
+
+            expect(mockWorkerSend).toHaveBeenCalledWith(expect.objectContaining({
+                attachments: undefined
+            }));
+        });
+
         it('should handle WorkerMailer errors', async () => {
             mockWorkerConnect.mockRejectedValueOnce(new Error('Connection timeout'));
 
             await expect(handler.handle('contact', {}, [], { recipients: 'r' }))
                 .rejects.toThrow('Edge SMTP Error: Connection timeout');
         });
+
+        it('should handle non-Error objects gracefully in Edge', async () => {
+            mockWorkerConnect.mockRejectedValueOnce('Edge String Error');
+
+            await expect(handler.handle('contact', {}, [], { recipients: 'r' }))
+                .rejects.toThrow('Edge SMTP Error: Edge String Error');
+        });
+
+        it('should send email via Edge with single recipient string', async () => {
+            const data = { name: 'Single Recipient Edge' };
+            await handler.handle('contact', data, [], { recipients: 'single@edge.com' });
+
+            expect(mockWorkerSend).toHaveBeenCalledWith(expect.objectContaining({
+                to: 'single@edge.com'
+            }));
+        });
     });
+
 });
+

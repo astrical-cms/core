@@ -10,8 +10,7 @@ describe('src/utils/utils', () => {
         });
 
         it('should return empty string for invalid date', () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            expect(getFormattedDate(undefined as any)).toBe('');
+            expect(getFormattedDate(undefined as unknown as Date)).toBe('');
         });
     });
 
@@ -133,14 +132,14 @@ describe('isEdge()', () => {
     });
 
     it('should return true if EdgeRuntime is defined', () => {
-        (globalThis as any).EdgeRuntime = 'edge';
+        (globalThis as unknown as { EdgeRuntime: string }).EdgeRuntime = 'edge';
         expect(isEdge()).toBe(true);
-        delete (globalThis as any).EdgeRuntime;
+        delete (globalThis as unknown as { EdgeRuntime?: string }).EdgeRuntime;
     });
 
     it('should return true if WebSocketPair is defined', () => {
-        (globalThis as any).WebSocketPair = {};
+        (globalThis as unknown as { WebSocketPair: object }).WebSocketPair = {};
         expect(isEdge()).toBe(true);
-        delete (globalThis as any).WebSocketPair;
+        delete (globalThis as unknown as { WebSocketPair?: object }).WebSocketPair;
     });
 });

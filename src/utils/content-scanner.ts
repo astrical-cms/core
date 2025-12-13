@@ -50,41 +50,41 @@ const MODULES_DIR = path.resolve(process.cwd(), 'modules');
  * @returns Record mapping spec types (first dir) to specific content
  */
 function loadContent(rootDir: string) {
-    const content: Record<string, Record<string, unknown>> = {};
+  const content: Record<string, Record<string, unknown>> = {};
 
-    function _loadContent(dir: string) {
-        if (!fs.existsSync(dir)) return;
+  function _loadContent(dir: string) {
+    if (!fs.existsSync(dir)) return;
 
-        const files = fs.readdirSync(dir);
+    const files = fs.readdirSync(dir);
 
-        for (const file of files) {
-            const filePath = path.join(dir, file);
-            const stat = fs.statSync(filePath);
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
 
-            if (stat.isDirectory()) {
-                _loadContent(filePath);
-            } else if (file.endsWith('.yaml') || file.endsWith('.yml')) {
-                const rawContent = fs.readFileSync(filePath, 'utf-8');
-                const parsedYaml = yaml.load(rawContent);
+      if (stat.isDirectory()) {
+        _loadContent(filePath);
+      } else if (file.endsWith('.yaml') || file.endsWith('.yml')) {
+        const rawContent = fs.readFileSync(filePath, 'utf-8');
+        const parsedYaml = yaml.load(rawContent);
 
-                const relativePath = path.relative(rootDir, filePath);
-                const pathComponents = relativePath.split('.')[0].replace(/\\/g, '/').split('/');
+        const relativePath = path.relative(rootDir, filePath);
+        const pathComponents = relativePath.split('.')[0].replace(/\\/g, '/').split('/');
 
-                // Structure: specType/path/to/item
-                const specType = pathComponents[0];
-                const specPath = pathComponents.slice(1).join('/');
+        // Structure: specType/path/to/item
+        const specType = pathComponents[0];
+        const specPath = pathComponents.slice(1).join('/');
 
-                if (!(specType in content)) {
-                    content[specType] = {};
-                }
-
-                content[specType][specPath] = parsedYaml as object;
-            }
+        if (!(specType in content)) {
+          content[specType] = {};
         }
-    }
 
-    _loadContent(rootDir);
-    return content;
+        content[specType][specPath] = parsedYaml as object;
+      }
+    }
+  }
+
+  _loadContent(rootDir);
+  return content;
 }
 
 /**
@@ -96,29 +96,29 @@ function loadContent(rootDir: string) {
  * @returns Combined content registry from all modules
  */
 function loadModuleContent() {
-    let moduleContent: Record<string, Record<string, unknown>> = {};
+  let moduleContent: Record<string, Record<string, unknown>> = {};
 
-    if (!fs.existsSync(MODULES_DIR)) {
-        return moduleContent;
-    }
-
-    const modules = fs.readdirSync(MODULES_DIR);
-
-    for (const moduleName of modules) {
-        const moduleContentDir = path.join(MODULES_DIR, moduleName, 'content');
-        if (fs.existsSync(moduleContentDir) && fs.statSync(moduleContentDir).isDirectory()) {
-            const content = loadContent(moduleContentDir);
-
-            // Enforce constraint: Modules cannot contribute menus
-            if (content['menus']) {
-                delete content['menus'];
-            }
-
-            moduleContent = merge(moduleContent, content);
-        }
-    }
-
+  if (!fs.existsSync(MODULES_DIR)) {
     return moduleContent;
+  }
+
+  const modules = fs.readdirSync(MODULES_DIR);
+
+  for (const moduleName of modules) {
+    const moduleContentDir = path.join(MODULES_DIR, moduleName, 'content');
+    if (fs.existsSync(moduleContentDir) && fs.statSync(moduleContentDir).isDirectory()) {
+      const content = loadContent(moduleContentDir);
+
+      // Enforce constraint: Modules cannot contribute menus
+      if (content['menus']) {
+        delete content['menus'];
+      }
+
+      moduleContent = merge(moduleContent, content);
+    }
+  }
+
+  return moduleContent;
 }
 
 /**
@@ -132,69 +132,69 @@ function loadModuleContent() {
  * @returns The fully processed and resolved content object
  */
 export function scanContent(projectContentDir: string): Record<string, unknown> {
-    // 1. Load base content from modules
-    const moduleContent = loadModuleContent();
+  // 1. Load base content from modules
+  const moduleContent = loadModuleContent();
 
-    // 2. Load project overrides
-    const projectContent = loadContent(projectContentDir);
+  // 2. Load project overrides
+  const projectContent = loadContent(projectContentDir);
 
-    // 3. Merge project over modules
-    const content = merge(moduleContent, projectContent);
+  // 3. Merge project over modules
+  const content = merge(moduleContent, projectContent);
 
-    // 4. Prepare for component resolution
-    const pages = content['pages'] || {};
-    const shared = content['shared'] || {};
-    const forms: Record<string, unknown> = {};
+  // 4. Prepare for component resolution
+  const pages = content['pages'] || {};
+  const shared = content['shared'] || {};
+  const forms: Record<string, unknown> = {};
 
-    /**
-     * Internal helper to recursively resolve 'component' references.
-     * Merges the referenced shared component data with any local overrides.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const resolveComponents = (node: any): any => {
-        if (Array.isArray(node)) {
-            return node.map((item) => resolveComponents(item));
-        }
-
-        if (node !== null && typeof node === 'object') {
-            // Check for shared component reference
-            if (node.component) {
-                const componentPath = node.component;
-                if (shared[componentPath]) {
-                    const sharedComponent = JSON.parse(JSON.stringify(shared[componentPath]));
-                    const overrides = { ...node };
-                    delete overrides.component;
-
-                    // Merge shared + overrides, then continue resolving recursively
-                    return resolveComponents(merge(sharedComponent, overrides));
-                }
-            }
-
-            const newNode: Record<string, unknown> = {};
-            for (const key in node) {
-                newNode[key] = resolveComponents(node[key]);
-            }
-
-            // Index forms found in the structure
-            if (node.type && node.type === 'Form' && typeof node.name === 'string') {
-                forms[node.name] = newNode; // Store the fully resolved node
-            }
-
-            return newNode;
-        }
-
-        return node;
-    };
-
-    // 5. Apply resolution to all pages
-    if (content['pages']) {
-        for (const pagePath in pages) {
-            content['pages'][pagePath] = resolveComponents(pages[pagePath]);
-        }
+  /**
+   * Internal helper to recursively resolve 'component' references.
+   * Merges the referenced shared component data with any local overrides.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resolveComponents = (node: any): any => {
+    if (Array.isArray(node)) {
+      return node.map((item) => resolveComponents(item));
     }
 
-    // 6. Attach the discovered forms index
-    content['forms'] = forms;
+    if (node !== null && typeof node === 'object') {
+      // Check for shared component reference
+      if (node.component) {
+        const componentPath = node.component;
+        if (shared[componentPath]) {
+          const sharedComponent = JSON.parse(JSON.stringify(shared[componentPath]));
+          const overrides = { ...node };
+          delete overrides.component;
 
-    return content;
+          // Merge shared + overrides, then continue resolving recursively
+          return resolveComponents(merge(sharedComponent, overrides));
+        }
+      }
+
+      const newNode: Record<string, unknown> = {};
+      for (const key in node) {
+        newNode[key] = resolveComponents(node[key]);
+      }
+
+      // Index forms found in the structure
+      if (node.type && node.type === 'Form' && typeof node.name === 'string') {
+        forms[node.name] = newNode; // Store the fully resolved node
+      }
+
+      return newNode;
+    }
+
+    return node;
+  };
+
+  // 5. Apply resolution to all pages
+  if (content['pages']) {
+    for (const pagePath in pages) {
+      content['pages'][pagePath] = resolveComponents(pages[pagePath]);
+    }
+  }
+
+  // 6. Attach the discovered forms index
+  content['forms'] = forms;
+
+  return content;
 }

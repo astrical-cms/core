@@ -185,10 +185,10 @@ export const toUiAmount = (amount: number) => {
  * @returns True if running in production mode (determined by import.meta.env.DEV)
  */
 export const isProd = (): boolean => {
-  /* v8 ignore next 5 */
   try {
     return !import.meta.env.DEV;
   } catch {
+    /* v8 ignore next */
     return false;
   }
 };
@@ -199,14 +199,12 @@ export const isProd = (): boolean => {
  * @returns True if running in an Edge environment
  */
 export const isEdge = (): boolean => {
-  /* v8 ignore next 8 */
   try {
     // Check for Cloudflare/Edge globals
-    return (
-      typeof (globalThis as any).EdgeRuntime === 'string' ||
-      typeof (globalThis as any).WebSocketPair !== 'undefined'
-    );
+    const global = globalThis as unknown as { EdgeRuntime?: string; WebSocketPair?: unknown };
+    return typeof global.EdgeRuntime === 'string' || typeof global.WebSocketPair !== 'undefined';
   } catch {
+    /* v8 ignore next */
     return false;
   }
 };
