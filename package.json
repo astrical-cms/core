@@ -33,11 +33,12 @@
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.10",
     "@fontsource-variable/inter": "^5.2.8",
+    "@nanostores/react": "^1.0.0",
     "astro": "^5.15.3",
     "astro-embed": "^0.9.1",
     "astro-icon": "^1.1.5",
     "js-yaml": "^4.1.0",
-    "nanostores": "^1.0.1",
+    "nanostores": "^1.1.0",
     "nodemailer": "^7.0.11",
     "puppeteer": "^24.32.0",
     "tailwind-merge": "^3.3.1",
