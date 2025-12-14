@@ -71,6 +71,7 @@ export type Config = {
   i18n?: I18NConfig;
   ui?: unknown;
   analytics?: unknown;
+  auth?: AuthConfig;
   formHandlers?: FormHandlersConfig;
   system?: SystemConfig;
 };
@@ -163,6 +164,12 @@ export interface AnalyticsConfig {
       id?: string;
       partytown?: boolean;
     };
+    googleTagManager?: {
+      id?: string;
+    };
+    facebook?: {
+      id?: string;
+    };
   };
 }
 
@@ -174,6 +181,25 @@ export interface AnalyticsConfig {
  */
 export interface UIConfig {
   theme: string;
+}
+
+/**
+ * AuthConfig interface defines the structure for authentication configuration.
+ * Controls settings for user authentication, roles, and redirected URLs.
+ *
+ * @property module - The specific auth module to use (e.g., 'simple-auth') or null (for disabled)
+ * @property loginUrl - URL to redirect unauthenticated users to
+ * @property accessDeniedUrl - URL to redirect unauthorized users to
+ * @property roles - List of defined roles for the application
+ */
+export interface AuthConfig {
+  module?: string | null;
+  loginUrl: string;
+  accessDeniedUrl: string;
+  roles?: {
+    name: string;
+    label: string;
+  }[];
 }
 
 /**
@@ -293,6 +319,25 @@ const getAnalytics = (config: Config) => {
 };
 
 /**
+ * Processes and builds the AUTH configuration object.
+ * Merges provided auth configuration with sensible defaults.
+ * Automatically enables auth if a configuration is present.
+ *
+ * @param config - Raw configuration object containing auth settings
+ * @returns Processed AuthConfig object with defaults applied
+ */
+const getAuth = (config: Config) => {
+  const _default = {
+    module: null,
+    loginUrl: '/login',
+    accessDeniedUrl: '/403',
+    roles: [],
+  };
+
+  return merge({}, _default, config?.auth ?? {}) as AuthConfig;
+};
+
+/**
  * Processes and builds the FORM_HANDLERS configuration object.
  */
 const getFormHandlers = (config: Config) => {
@@ -338,7 +383,7 @@ const getSystem = (config: Config) => {
  * });
  *
  * // Returns structured configuration objects
- * // config.SITE, config.I18N, config.METADATA, config.UI, config.ANALYTICS
+ * // config.SITE, config.I18N, config.METADATA, config.UI, config.ANALYTICS, config.AUTH
  */
 export default (config: Config) => ({
   SITE: getSite(config),
@@ -346,6 +391,7 @@ export default (config: Config) => ({
   METADATA: getMetadata(config),
   UI: getUI(config),
   ANALYTICS: getAnalytics(config),
+  AUTH: getAuth(config),
   FORM_HANDLERS: getFormHandlers(config),
   SYSTEM: getSystem(config),
 });

@@ -192,8 +192,8 @@ export function generateSection(
  * Generates a list of all available page paths for static site generation.
  *
  * Uses the router's route enumeration to create a list of all valid page
- * paths, excluding the home page which is handled separately. This list
- * is used by Astro's getStaticPaths functions for dynamic route generation.
+ * paths, excluding the home page and pages restricted by access control.
+ * This list is used by Astro's getStaticPaths functions for dynamic route generation.
  *
  * @returns Array of page path strings for static generation
  */
@@ -201,7 +201,14 @@ export function generateLinks(): Array<string> {
   const links: Array<string> = [];
   routes().map((card) => {
     if (card.name != 'home') {
-      links.push(card.name);
+      const metadata = (card.props?.metadata || {}) as Record<string, unknown>;
+      const access = (metadata.access || []) as Array<string>;
+
+      // Check if page has specific access requirements
+      // Only include if no access specified or includes 'public'
+      if (!access || access.length === 0 || access.includes('public')) {
+        links.push(card.name);
+      }
     }
   });
   return links;

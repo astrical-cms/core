@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import siteConfigPlugin from '~/../plugins/config/index';
+import siteConfigPlugin from '@plugins/config/index';
 // Mock dependencies with hoisted variables
 const { mockExistsSync, mockReadFileSync, mockWriteFileSync } = vi.hoisted(() => ({
     mockExistsSync: vi.fn(),
@@ -213,6 +213,31 @@ describe('plugins/config/index', () => {
             expect(mockWriteFileSync).not.toHaveBeenCalled();
         });
 
+        it('should not update if sitemap file does not exist', async () => {
+            const plugin = siteConfigPlugin();
+            const doneHook = plugin.hooks['astro:config:done'];
+            const buildHook = plugin.hooks['astro:build:done'];
+
+            // @ts-ignore
+            await doneHook({
+                config: {
+                    outDir: new URL('file:///dist/'),
+                    publicDir: new URL('file:///public/'),
+                    site: 'https://example.com',
+                    integrations: [{ name: '@astrojs/sitemap', hooks: {} } as any]
+                } as any
+            });
+
+            mockExistsSync.mockReturnValue(false); // Sitemap missing
+            mockWriteFileSync.mockClear();
+
+            const logger = { fork: vi.fn().mockReturnValue({ info: vi.fn() }) } as any;
+            // @ts-ignore
+            await buildHook({ logger });
+
+            expect(mockWriteFileSync).not.toHaveBeenCalled();
+        });
+
         it('should replace existing sitemap in robots.txt', async () => {
             const plugin = siteConfigPlugin();
             const doneHook = plugin.hooks['astro:config:done'];
@@ -254,6 +279,28 @@ describe('plugins/config/index', () => {
 
             const logger = { fork: vi.fn().mockReturnValue({ info: vi.fn() }) };
 
+            // Should not throw
+            // @ts-ignore
+            await expect(buildHook({ logger: logger as any })).resolves.not.toThrow();
+        });
+
+        it('should handle file system errors in build hook', async () => {
+            const plugin = siteConfigPlugin();
+            const doneHook = plugin.hooks['astro:config:done'];
+            const buildHook = plugin.hooks['astro:build:done'];
+
+            // @ts-ignore
+            await doneHook({
+                config: {
+                    outDir: new URL('file:///dist/'),
+                    integrations: [{ name: '@astrojs/sitemap' }]
+                } as any
+            });
+
+            // Mock fs to throw
+            mockExistsSync.mockImplementation(() => { throw new Error('FS Error'); });
+
+            const logger = { fork: vi.fn().mockReturnValue({ info: vi.fn() }) };
             // Should not throw
             // @ts-ignore
             await expect(buildHook({ logger: logger as any })).resolves.not.toThrow();

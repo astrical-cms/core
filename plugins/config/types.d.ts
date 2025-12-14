@@ -47,10 +47,10 @@ declare module 'site:config' {
     UIConfig,
     AnalyticsConfig,
     FormHandlersConfig,
-    FormHandlersConfig,
     SystemConfig,
-  } from './config';
-  import type { Module } from './utils/module-scanner';
+    AuthConfig,
+  } from '@plugins/config/utils/builder';
+  import type { Module } from '@plugins/config/utils/module-scanner';
 
   /**
    * SITE configuration object containing site-level settings.
@@ -111,6 +111,17 @@ declare module 'site:config' {
    * @property vendors.facebook.id - Facebook Pixel ID
    */
   export const ANALYTICS: AnalyticsConfig;
+
+  /**
+   * AUTH configuration object containing authentication settings.
+   * Controls login/access URLs and role definitions.
+   *
+   * @property module - The specific auth module to use (e.g., 'simple-auth') or null (for disabled)
+   * @property loginUrl - URL to redirect unauthenticated users to
+   * @property accessDeniedUrl - URL to redirect unauthorized users to
+   * @property roles - List of defined roles for the application
+   */
+  export const AUTH: AuthConfig;
 
   /**
    * FORM_HANDLERS configuration object.

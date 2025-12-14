@@ -220,4 +220,140 @@ describe('src/utils/content-scanner', () => {
             expect(Array.isArray((result as any).list['data'])).toBe(true);
         });
     });
+
+    describe('coverage edge cases', () => {
+        it('should ignore non-yaml files in content directory', () => {
+            mockExistsSync.mockReturnValue(true);
+            mockReaddirSync.mockReturnValue(['ignore.txt']);
+            mockStatSync.mockReturnValue({ isDirectory: () => false });
+            mockReadFileSync.mockReturnValue('content');
+
+            const result = scanContent('/content');
+            expect(Object.keys(result).filter(k => k !== 'forms')).toHaveLength(0);
+        });
+
+        it('should skip modules without content directory', () => {
+            const modulesDir = path.resolve(process.cwd(), 'modules');
+            mockExistsSync.mockImplementation((p: string) => {
+                if (p === modulesDir) return true;
+                if (p === path.join(modulesDir, 'mod-empty')) return true;
+                if (p === path.join(modulesDir, 'mod-empty', 'content')) return false;
+                return p === '/content';
+            });
+
+            mockReaddirSync.mockImplementation((p: string) => {
+                if (p === modulesDir) return ['mod-empty'];
+                if (p === '/content') return [];
+                return [];
+            });
+
+            mockStatSync.mockReturnValue({ isDirectory: () => true });
+
+            const result = scanContent('/content');
+            expect(result).toEqual({ forms: {} });
+        });
+
+        it('should skip modules where content path exists but is not a directory', () => {
+            const modulesDir = path.resolve(process.cwd(), 'modules');
+            mockExistsSync.mockReturnValue(true);
+
+            mockReaddirSync.mockImplementation((p: string) => {
+                if (p === modulesDir) return ['mod-file'];
+                return [];
+            });
+
+            mockStatSync.mockImplementation((p: string) => ({
+                isDirectory: () => {
+                    if (p === path.join(modulesDir, 'mod-file', 'content')) return false;
+                    return true;
+                }
+            }));
+
+            const result = scanContent('/content');
+            expect(result).toEqual({ forms: {} });
+        });
+
+        it('should handle null nodes in resolveComponents', () => {
+            // Mock a structure that contains explicit null
+            mockExistsSync.mockReturnValue(true);
+            mockReaddirSync.mockImplementation((p) => {
+                if (p === '/content') return ['pages'];
+                if (p === '/content/pages') return ['null-test.yaml'];
+                return [];
+            });
+            mockStatSync.mockImplementation((p: string) => ({
+                isDirectory: () => {
+                    return !p.endsWith('.yaml');
+                }
+            }));
+
+            mockReadFileSync.mockReturnValue('prop: null');
+
+            const result = scanContent('/content');
+            // result.pages['null-test'] -> { prop: null }
+            expect((result as any).pages['null-test'].prop).toBeNull();
+        });
+
+        it('should not index forms with non-string names', () => {
+            mockExistsSync.mockReturnValue(true);
+            mockReaddirSync.mockReturnValue(['bad-form.yaml']);
+            mockStatSync.mockReturnValue({ isDirectory: () => false });
+            mockReadFileSync.mockReturnValue('type: Form\nname: 123\nfields: []');
+
+            const result = scanContent('/content');
+            // Should not be in forms index
+            expect(Object.keys(result.forms as object)).toHaveLength(0);
+        });
+
+        it('should aggregate multiple files for the same spec type', () => {
+            mockExistsSync.mockReturnValue(true);
+            mockReaddirSync.mockImplementation((p) => {
+                if (p === '/content') return ['pages'];
+                if (p === '/content/pages') return ['a.yaml', 'b.yaml'];
+                return [];
+            });
+            mockStatSync.mockImplementation((p: string) => ({
+                isDirectory: () => {
+                    if (p === '/content') return true;
+                    if (p === '/content/pages') return true;
+                    return false; // files
+                }
+            }));
+            mockReadFileSync.mockImplementation((p) => {
+                if (p.endsWith('a.yaml')) return 'title: A';
+                if (p.endsWith('b.yaml')) return 'title: B';
+                return '';
+            });
+
+            const result = scanContent('/content');
+            expect((result as any).pages['a']).toEqual({ title: 'A' });
+            expect((result as any).pages['b']).toEqual({ title: 'B' });
+        });
+
+        it('should process modules without menus', () => {
+            const modulesDir = path.resolve(process.cwd(), 'modules');
+            mockExistsSync.mockImplementation((p: string) => {
+                if (p === modulesDir) return true;
+                if (p === path.join(modulesDir, 'mod-no-menu')) return true;
+                if (p === path.join(modulesDir, 'mod-no-menu', 'content')) return true;
+                return p === '/content';
+            });
+            mockReaddirSync.mockImplementation((p: string) => {
+                if (p === modulesDir) return ['mod-no-menu'];
+                if (p === path.join(modulesDir, 'mod-no-menu', 'content')) return ['pages.yaml'];
+                if (p === '/content') return [];
+                return [];
+            });
+            mockStatSync.mockImplementation((p) => ({
+                isDirectory: () => !p.endsWith('.yaml')
+            }));
+            mockReadFileSync.mockReturnValue('title: Module Page');
+
+            const result = scanContent('/content');
+            // Menus should be undefined (no menus in module, none in project)
+            // But 'pages' should exist from module
+            expect((result as any).pages).toBeDefined();
+            // line 113 branch 'if (content.menus)' is checked here (expected false)
+        });
+    });
 });

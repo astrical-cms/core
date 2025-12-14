@@ -127,7 +127,7 @@ export default ({ config: _themeConfig = 'content/config.yaml' } = {}): AstroInt
         const rawJsonConfig = (await loadConfig(_themeConfig)) as Config;
 
         // Build structured configuration objects with defaults
-        const { SITE, I18N, METADATA, UI, ANALYTICS, FORM_HANDLERS, SYSTEM } = buildConfig(rawJsonConfig);
+        const { SITE, I18N, METADATA, UI, ANALYTICS, FORM_HANDLERS, SYSTEM, AUTH } = buildConfig(rawJsonConfig);
 
         // Scan and sort modules for middleware
         const modulesDir = path.resolve(process.cwd(), 'modules');
@@ -189,9 +189,7 @@ export default ({ config: _themeConfig = 'content/config.yaml' } = {}): AstroInt
                  * @returns Resolved virtual module identifier or undefined
                  */
                 resolveId(id) {
-                  if (id === virtualModuleId) {
-                    return resolvedVirtualModuleId;
-                  }
+                  return id === virtualModuleId ? resolvedVirtualModuleId : undefined;
                 },
 
                 /**
@@ -204,20 +202,21 @@ export default ({ config: _themeConfig = 'content/config.yaml' } = {}): AstroInt
                  * @returns JavaScript code for module exports or undefined
                  */
                 load(id) {
-                  if (id === resolvedVirtualModuleId) {
-                    return `
+                  if (id !== resolvedVirtualModuleId) return undefined;
+
+                  return `
                     export const SITE = ${JSON.stringify(SITE)};
                     export const I18N = ${JSON.stringify(I18N)};
                     export const METADATA = ${JSON.stringify(METADATA)};
                     export const UI = ${JSON.stringify(UI)};
                     export const ANALYTICS = ${JSON.stringify(ANALYTICS)};
+                    export const AUTH = ${JSON.stringify(AUTH)};
                     export const FORM_HANDLERS = ${JSON.stringify(FORM_HANDLERS)};
                     export const FORMS = ${JSON.stringify(FORMS)};
                     export const SYSTEM = ${JSON.stringify(SYSTEM)};
                     export const MODULES = ${JSON.stringify(MODULES)};
                     export const MIDDLEWARE = ${JSON.stringify(MIDDLEWARE)};
                     `;
-                  }
                 },
               },
             ],

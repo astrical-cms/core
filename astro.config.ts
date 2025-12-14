@@ -115,6 +115,11 @@ export default defineConfig({
         '@modules': path.resolve(__dirname, './modules'),
       },
     },
+    server: {
+      fs: {
+        allow: ['../..'],
+      },
+    },
     ssr: {
       external: [
         'node:child_process',

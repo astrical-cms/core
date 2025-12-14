@@ -10,6 +10,7 @@
  * - Reference to core Astro client types
  * - Reference to Vite client types for build tooling
  * - Reference to project-specific plugin types
+ * - Type definitions for Authentication locals
  *
  * Type Reference Chain:
  * 1. ../.astro/types.d.ts - Astro's generated type definitions
@@ -33,10 +34,67 @@
 /// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
 /// <reference types="vite/client" />
-/// <reference types="../plugins/config/types.d.ts" />
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../plugins/config/types.d.ts" />
 
 declare namespace App {
+  /**
+   * Extends the Astro Locals interface to include application-specific state.
+   * This interface is available in all Astro components and API endpoints via `Astro.locals` or `context.locals`.
+   */
   interface Locals {
+    /**
+     * Authentication state and utilities.
+     * This property is populated by authentication middleware/modules to provide
+     * access to the current user's session and permission checks.
+     */
+    auth: {
+      /**
+       * The currently authenticated user, or null if no user is logged in.
+       */
+      user: {
+        /** Unique identifier for the user. */
+        id: string;
+        /** User's email address. */
+        email?: string;
+        /** User's display name. */
+        name?: string;
+        /** URL to the user's avatar image. */
+        avatar?: string;
+        /**
+         * Allow extensibility for arbitrary user properties provided by specific auth providers.
+         */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      } | null;
+
+      /**
+       * List of roles assigned to the current user.
+       * Example: `['admin', 'editor']`
+       */
+      roles: string[];
+
+      /**
+       * Checks if the current user has at least one of the required roles.
+       * @param requiredRoles - Array of role names to check against the user's roles.
+       * @returns True if the user has permission, false otherwise.
+       */
+      hasRole: (requiredRoles: string[]) => boolean;
+
+      /**
+       * Configuration for authentication-related redirects.
+       * These are populated by the auth module or configuration settings.
+       */
+      urls: {
+        /** URL to redirect unauthenticated users to for login. */
+        login: string;
+        /** URL to trigger user logout. */
+        logout: string;
+        /** URL for new user registration. */
+        register: string;
+      };
+    };
+
     /**
      * A reserved namespace for modules to store their runtime data.
      * Modules should strictly use their specific key within this object to ensure isolation.
