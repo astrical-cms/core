@@ -23,6 +23,12 @@ vi.mock('node:os', async () => {
     };
 });
 
+// Mock module scanner
+vi.mock('../../../plugins/config/utils/module-scanner', () => ({
+    scanModules: vi.fn().mockReturnValue([]),
+    sortModules: vi.fn().mockReturnValue([]),
+}));
+
 // Mock internal utils
 vi.mock('../../../plugins/config/utils/loader', () => ({
     loadConfig: vi.fn().mockResolvedValue({}),
@@ -34,7 +40,9 @@ vi.mock('../../../plugins/config/utils/builder', () => ({
         I18N: {},
         METADATA: {},
         UI: {},
-        ANALYTICS: {}
+        ANALYTICS: {},
+        SYSTEM: { middleware: { pre: [], post: [] } },
+        FORM_HANDLERS: {},
     }),
 }));
 
@@ -83,6 +91,7 @@ describe('plugins/config/index', () => {
             // Check load
             const code = plugin.load('\0site:config');
             expect(code).toContain('export const SITE =');
+            expect(code).toContain('export const MODULES = []');
 
             expect(addWatchFile).toHaveBeenCalled();
         });
@@ -92,7 +101,7 @@ describe('plugins/config/index', () => {
             const buildConfigMock = await import('../../../plugins/config/utils/builder');
             (buildConfigMock.default as Mock).mockReturnValueOnce({
                 SITE: { site: 'https://example.com', base: '/', trailingSlash: true, contentDir: '' } as any,
-                I18N: {} as any, METADATA: {} as any, UI: {} as any, ANALYTICS: {} as any
+                I18N: {} as any, METADATA: {} as any, UI: {} as any, ANALYTICS: {} as any, SYSTEM: { middleware: { pre: [], post: [] } } as any, FORM_HANDLERS: {} as any
             });
 
             const setup = integration.hooks['astro:config:setup'];

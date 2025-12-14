@@ -40,7 +40,17 @@
  */
 
 declare module 'site:config' {
-  import type { SiteConfig, I18NConfig, MetaDataConfig, UIConfig, AnalyticsConfig, FormHandlersConfig } from './config';
+  import type {
+    SiteConfig,
+    I18NConfig,
+    MetaDataConfig,
+    UIConfig,
+    AnalyticsConfig,
+    FormHandlersConfig,
+    FormHandlersConfig,
+    SystemConfig,
+  } from './config';
+  import type { Module } from './utils/module-scanner';
 
   /**
    * SITE configuration object containing site-level settings.
@@ -113,4 +123,20 @@ declare module 'site:config' {
    * This is bundled at build time to avoid runtime filesystem access.
    */
   export const FORMS: Record<string, { handlers: Record<string, unknown> }>;
+
+  /**
+   * SYSTEM configuration object.
+   */
+  export const SYSTEM: SystemConfig;
+
+  /**
+   * Final ordered list of middleware modules to execute.
+   * This generic string array contains the module names in execution order.
+   */
+  export const MIDDLEWARE: string[];
+
+  /**
+   * List of all discovered modules.
+   */
+  export const MODULES: Module[];
 }

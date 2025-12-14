@@ -72,7 +72,22 @@ export type Config = {
   ui?: unknown;
   analytics?: unknown;
   formHandlers?: FormHandlersConfig;
+  system?: SystemConfig;
 };
+
+/**
+ * SystemConfig interface defines the structure for system-level configuration.
+ *
+ * @property middleware - Middleware configuration
+ * @property middleware.pre - List of middleware modules to run before system middleware
+ * @property middleware.post - List of middleware modules to run after system middleware
+ */
+export interface SystemConfig {
+  middleware?: {
+    pre?: string[];
+    post?: string[];
+  };
+}
 
 /**
  * SiteConfig interface defines the structure for site-level configuration.
@@ -292,6 +307,19 @@ const getFormHandlers = (config: Config) => {
 };
 
 /**
+ * Processes and builds the SYSTEM configuration object.
+ */
+const getSystem = (config: Config) => {
+  const _default: SystemConfig = {
+    middleware: {
+      pre: [],
+      post: [],
+    },
+  };
+  return merge({}, _default, config?.system ?? {}) as SystemConfig;
+};
+
+/**
  * Main configuration builder function that processes raw configuration data
  * and returns structured configuration objects for each section.
  *
@@ -319,4 +347,5 @@ export default (config: Config) => ({
   UI: getUI(config),
   ANALYTICS: getAnalytics(config),
   FORM_HANDLERS: getFormHandlers(config),
+  SYSTEM: getSystem(config),
 });

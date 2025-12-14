@@ -1,4 +1,4 @@
- 
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { describe, it, expect } from 'vitest';
 import buildConfig from '~/../plugins/config/utils/builder';
@@ -40,5 +40,10 @@ describe('plugins/config/utils/builder', () => {
     it('should use site name for metadata default title', () => {
         const config = buildConfig({ site: { name: 'My Brand', contentDir: '' } });
         expect(config.METADATA.title?.default).toBe('My Brand');
+    });
+
+    it('should fall back to default site name if empty string provided', () => {
+        const config = buildConfig({ site: { name: '', contentDir: '' } });
+        expect(config.METADATA.title?.default).toBe('Website');
     });
 });

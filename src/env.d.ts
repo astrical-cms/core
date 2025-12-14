@@ -34,3 +34,15 @@
 /// <reference types="astro/client" />
 /// <reference types="vite/client" />
 /// <reference types="../plugins/config/types.d.ts" />
+
+declare namespace App {
+  interface Locals {
+    /**
+     * A reserved namespace for modules to store their runtime data.
+     * Modules should strictly use their specific key within this object to ensure isolation.
+     * e.g., locals.modules['supabase-auth']
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    modules: Record<string, any>;
+  }
+}

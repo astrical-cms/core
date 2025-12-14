@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
- 
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST } from '~/pages/api/submit-form';
 import { formProcessor } from '~/utils/forms';
@@ -79,6 +79,22 @@ describe('pages/api/submit-form', () => {
 
         expect(response.status).toBe(200);
         expect(formProcessor).toHaveBeenCalledWith('survey', { options: ['A', 'B'] }, []);
+    });
+
+    it('should handle duplicate keys by converting to array', async () => {
+        const formData = new FormData();
+        formData.append('form-name', 'test');
+        formData.append('test-key', 'val1');
+        formData.append('test-key', 'val2');
+
+        const request = new Request('http://localhost/api/submit-form', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const response = await POST({ request } as any);
+        expect(response.status).toBe(200);
+        expect(formProcessor).toHaveBeenCalledWith('test', { key: ['val1', 'val2'] }, []);
     });
 
     it('should handle file attachments', async () => {

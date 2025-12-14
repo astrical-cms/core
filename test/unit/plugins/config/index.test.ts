@@ -22,6 +22,10 @@ vi.mock('~/../plugins/config/utils/loader', () => ({
 vi.mock('~/utils/content-scanner', () => ({
     scanContent: vi.fn().mockReturnValue({ forms: {} })
 }));
+vi.mock('~/../plugins/config/utils/module-scanner', () => ({
+    scanModules: vi.fn().mockReturnValue([]),
+    sortModules: vi.fn().mockReturnValue([])
+}));
 
 
 import { loadConfig } from '~/../plugins/config/utils/loader';
@@ -76,6 +80,10 @@ describe('plugins/config/index', () => {
             expect(loadResult).toContain('export const SITE =');
             expect(loadResult).toContain('Test Site'); // Should contain loaded config value
 
+            expect(loadResult).toContain('Test Site'); // Should contain loaded config value
+            expect(loadResult).toContain('export const MODULES = []');
+            expect(loadResult).toContain('export const MIDDLEWARE = []');
+
             expect(vitePlugin.load('other')).toBeUndefined();
         });
 
@@ -121,6 +129,35 @@ describe('plugins/config/index', () => {
             await hook({ config, logger, updateConfig, addWatchFile });
 
             expect(updateConfig).toHaveBeenCalled();
+        });
+
+        it('should handle system middleware configuration', async () => {
+            const plugin = siteConfigPlugin({ config: 'config.yaml' });
+            const hook = plugin.hooks['astro:config:setup'];
+
+            // Mock loadConfig to return system middleware
+            (loadConfig as any).mockResolvedValue({
+                system: {
+                    middleware: {
+                        pre: ['pre-mw'],
+                        post: ['post-mw']
+                    }
+                }
+            });
+
+            const updateConfig = vi.fn();
+            const config = { root: new URL('file:///root/') } as any;
+            const logger = { fork: vi.fn().mockReturnValue({ info: vi.fn() }) } as any;
+            const addWatchFile = vi.fn();
+
+            // @ts-ignore
+            await hook({ config, logger, updateConfig, addWatchFile });
+
+            const viteConfig = (updateConfig.mock.calls[0][0] as any).vite;
+            const loadResult = viteConfig.plugins[0].load('\0site:config');
+
+            expect(loadResult).toContain('pre-mw');
+            expect(loadResult).toContain('post-mw');
         });
     });
 

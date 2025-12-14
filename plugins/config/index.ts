@@ -62,6 +62,7 @@ import type { AstroConfig, AstroIntegration } from 'astro';
 
 import buildConfig, { type Config } from './utils/builder';
 import { loadConfig } from './utils/loader';
+import { scanModules, sortModules } from './utils/module-scanner';
 import { scanContent } from '../../src/utils/content-scanner';
 
 /**
@@ -126,7 +127,22 @@ export default ({ config: _themeConfig = 'content/config.yaml' } = {}): AstroInt
         const rawJsonConfig = (await loadConfig(_themeConfig)) as Config;
 
         // Build structured configuration objects with defaults
-        const { SITE, I18N, METADATA, UI, ANALYTICS, FORM_HANDLERS } = buildConfig(rawJsonConfig);
+        const { SITE, I18N, METADATA, UI, ANALYTICS, FORM_HANDLERS, SYSTEM } = buildConfig(rawJsonConfig);
+
+        // Scan and sort modules for middleware
+        const modulesDir = path.resolve(process.cwd(), 'modules');
+        const MODULES = scanModules(modulesDir);
+
+        // Construct final middleware order
+        const middleware = [
+          ...(SYSTEM.middleware?.pre || []),
+          ...sortModules(MODULES),
+          ...(SYSTEM.middleware?.post || []),
+        ];
+        // Remove duplicates, keeping the first occurrence? Or last?
+        // Usually explicit config overrides, but here it's an order.
+        // Let's just dedup by keeping first occurrence.
+        const MIDDLEWARE = [...new Set(middleware)];
 
         // Set content directory based on configuration file location
         SITE.contentDir = getContentPath(config.root.pathname, _themeConfig);
@@ -197,6 +213,9 @@ export default ({ config: _themeConfig = 'content/config.yaml' } = {}): AstroInt
                     export const ANALYTICS = ${JSON.stringify(ANALYTICS)};
                     export const FORM_HANDLERS = ${JSON.stringify(FORM_HANDLERS)};
                     export const FORMS = ${JSON.stringify(FORMS)};
+                    export const SYSTEM = ${JSON.stringify(SYSTEM)};
+                    export const MODULES = ${JSON.stringify(MODULES)};
+                    export const MIDDLEWARE = ${JSON.stringify(MIDDLEWARE)};
                     `;
                   }
                 },
