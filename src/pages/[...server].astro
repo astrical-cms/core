@@ -78,6 +78,30 @@ if (!pageData) {
 
 // Retrieve layout configuration for consistent page structure
 const layoutProps = getLayout(pageSlug);
+
+// Access Control Guard
+const access = layoutProps['access'] as Array<string> | undefined;
+
+// Check if page has access restrictions
+if (access && access.length > 0 && !access.includes('public')) {
+  // If no auth provider is present (fail closed)
+  if (!Astro.locals.auth) {
+    return Astro.redirect('/403');
+  }
+
+  // If user is not logged in
+  if (!Astro.locals.auth.user) {
+    // Redirect to login page
+    return Astro.redirect(Astro.locals.auth.urls.login);
+  }
+
+  // Check if user has required roles
+  if (!Astro.locals.auth.hasRole(access)) {
+    // User is logged in but doesn't have permission
+    // Redirect to 403 Forbidden page
+    return Astro.redirect('/403');
+  }
+}
 ---
 
 {
