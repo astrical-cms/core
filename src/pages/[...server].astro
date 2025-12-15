@@ -91,8 +91,8 @@ if (access && access.length > 0 && !access.includes('public')) {
 
   // If user is not logged in
   if (!Astro.locals.auth.user) {
-    // Redirect to login page
-    return Astro.redirect(Astro.locals.auth.urls.login);
+    // Redirect to login page with next parameter
+    return Astro.redirect(`${Astro.locals.auth.urls.login}?next=${encodeURIComponent(Astro.url.pathname)}`);
   }
 
   // Check if user has required roles
