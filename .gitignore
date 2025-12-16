@@ -10,11 +10,11 @@ test-results/
 playwright-report/
 
 # Platform modules
-modules/
+/modules
 
 # Content directories
-content/
-public/
+/content
+/public
 
 # Temporary files
 data/
