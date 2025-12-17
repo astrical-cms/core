@@ -317,8 +317,6 @@ function processWidget(widget: Record<string, unknown>): Record<string, unknown>
  * @returns Flattened array of accessible widget configurations
  */
 function processSections(sections: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
-  if (!sections) return [];
-
   const widgets: Array<Record<string, unknown>> = [];
 
   for (const section of sections) {
@@ -331,10 +329,14 @@ function processSections(sections: Array<Record<string, unknown>>): Array<Record
 
     if (componentsData) {
       for (const key in componentsData) {
-        for (const component of componentsData[key]) {
-          const cleanWidget = processWidget(component);
-          if (cleanWidget) {
-            widgets.push(cleanWidget);
+        // value is iterable (array)
+        const componentList = componentsData[key];
+        if (Array.isArray(componentList)) {
+          for (const component of componentList) {
+            const cleanWidget = processWidget(component);
+            if (cleanWidget) {
+              widgets.push(cleanWidget);
+            }
           }
         }
       }
@@ -364,12 +366,10 @@ function stripStyle(data: unknown): unknown {
   if (data && typeof data === 'object' && data.constructor === Object) {
     const newData: Record<string, unknown> = {};
     for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        if (styleKeys.includes(key)) {
-          continue;
-        }
-        newData[key] = stripStyle(data[key]);
+      if (styleKeys.includes(key)) {
+        continue;
       }
+      newData[key] = stripStyle(data[key]);
     }
     return newData;
   }

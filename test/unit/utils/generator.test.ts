@@ -66,6 +66,18 @@ describe('src/utils/generator', () => {
             expect(result[0].props).toEqual({ type: 'TestComponent', props: { a: 1 } });
         });
 
+        it('should wrap components with access control in AuthGuard', () => {
+            const components = [
+                { type: 'TestComponent', props: { a: 1 }, access: ['admin'] }
+            ];
+            const result = generate(components as any);
+            expect(result).toHaveLength(1);
+            // AuthGuard is used as component
+            expect(result[0].props).toHaveProperty('requiredRoles', ['admin']);
+            expect(result[0].props).toHaveProperty('checkMode', 'any');
+            expect(result[0].props).toHaveProperty('component');
+        });
+
         it('should handle empty input', () => {
             expect(generate(undefined as any)).toEqual([]);
             expect(generateSection(undefined as any)).toEqual([]);
@@ -115,17 +127,36 @@ describe('src/utils/generator', () => {
     });
 
     describe('Data Generation', () => {
-        it('should generate clean data stripping styles', () => {
+        it('should generate clean data stripping styles and enforcing access control', () => {
             (getSpecs as any).mockImplementation((type: string) => {
                 if (type === 'pages') return {
                     'home': {
                         title: 'Home',
                         bg: 'red',
                         classes: 'p-4',
-                        content: {
-                            text: 'Hello',
-                            bg: 'blue' // Nested style
-                        }
+                        metadata: { access: ['public'] },
+                        sections: [
+                            {
+                                // Public section with map structure
+                                access: ['public'],
+                                components: {
+                                    main: [
+                                        { type: 'PublicWidget', text: 'Visible', access: ['public'] },
+                                        { type: 'PrivateWidget', text: 'Hidden', access: ['admin'] },
+                                        { type: 'DefaultWidget', text: 'Also Visible' } // No access implies public
+                                    ]
+                                }
+                            },
+                            {
+                                // Private section
+                                access: ['admin'],
+                                components: {
+                                    main: [
+                                        { type: 'PublicWidgetInSection', text: 'HiddenBySection', access: ['public'] }
+                                    ]
+                                }
+                            }
+                        ]
                     }
                 };
                 if (type === 'menus') return { header: [] };
@@ -133,29 +164,99 @@ describe('src/utils/generator', () => {
             });
 
             const data = generateData('home');
-            expect(data).toEqual({
+
+            // Check root properties
+            expect(data).toEqual(expect.objectContaining({
                 title: 'Home',
-                content: { text: 'Hello' }
-            });
-            // Should removed bg and classes
+                // metadata.access is stripped by stripStyle
+            }));
+
             expect((data as any).bg).toBeUndefined();
+
+            // Check flattened widgets
+            const widgets = (data as any).widgets;
+            expect(widgets).toHaveLength(2);
+
+            // Widget 1: PublicWidget
+            expect(widgets[0]).toEqual({
+                type: 'PublicWidget',
+                text: 'Visible'
+            });
+            // Should strip access prop from output
+            expect(widgets[0].access).toBeUndefined();
+
+            // Widget 2: DefaultWidget
+            expect(widgets[1]).toEqual({
+                type: 'DefaultWidget',
+                text: 'Also Visible'
+            });
+
+            // Private widget and Private section contents should be missing
+            expect(widgets.find((w: any) => w.text === 'Hidden')).toBeUndefined();
+            expect(widgets.find((w: any) => w.text === 'HiddenBySection')).toBeUndefined();
         });
 
-        it('should return null for missing page', () => {
+        it('should handle missing page data in generateData', () => {
             (getSpecs as any).mockReturnValue({});
             expect(generateData('missing')).toBeNull();
         });
 
-        it('should generate complete site data', () => {
+        it('should handle page with no sections', () => {
             (getSpecs as any).mockImplementation((type: string) => {
-                if (type === 'pages') return { 'p1': { title: 'P1' } };
+                if (type === 'pages') return { 'empty-page': { title: 'Empty' } };
+                return {};
+            });
+            const result = generateData('empty-page');
+            expect((result as any).widgets).toEqual([]);
+        });
+
+        it('should ignore invalid component map values', () => {
+            (getSpecs as any).mockImplementation((type: string) => {
+                if (type === 'pages') return {
+                    'invalid-map': {
+                        title: 'Invalid',
+                        sections: [{
+                            components: {
+                                main: 'not-an-array', // Should be ignored
+                                valid: [{ type: 'W1', text: 'Valid' }]
+                            }
+                        }]
+                    }
+                };
+                return {};
+            });
+            const result = generateData('invalid-map');
+            expect((result as any).widgets).toHaveLength(1);
+            expect((result as any).widgets[0].text).toBe('Valid');
+        });
+
+        it('should generate complete site data excluding private pages', () => {
+            (getSpecs as any).mockImplementation((type: string) => {
+                if (type === 'pages') return {
+                    'p1': {
+                        title: 'P1',
+                        metadata: { access: ['public'] },
+                        sections: [{ components: { main: [{ type: 'W1', text: 'T1' }] } }]
+                    },
+                    'p2': {
+                        title: 'P2',
+                        metadata: { access: ['admin'] },
+                        sections: []
+                    }
+                };
                 if (type === 'menus') return { header: [{ text: 'H' }] };
                 return {};
             });
 
             const site = generateSite();
-            expect(site.menus).toEqual({ header: [{ text: 'H' }] });
-            expect(site.pages).toEqual({ 'p1': { title: 'P1' } });
+            expect((site as any).menus).toEqual({ header: [{ text: 'H' }] });
+
+            // Public page should be present
+            expect((site as any).pages['p1']).toBeDefined();
+            expect(((site as any).pages['p1'] as any).widgets[0].text).toBe('T1');
+
+            // Private page should be excluded
+            expect((site as any).pages['p2']).toBeUndefined();
         });
     });
 });

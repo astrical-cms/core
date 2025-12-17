@@ -57,6 +57,16 @@ describe('src/utils/theme', () => {
         vi.clearAllMocks();
     });
 
+    it('should handle null/empty yaml load', () => {
+        vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+        vi.spyOn(fs, 'readdirSync').mockReturnValue(['mod1'] as any);
+        vi.spyOn(fs, 'readFileSync').mockReturnValue('');
+        (yaml.load as any).mockReturnValue(null); // Return null to hit || {} branch
+
+        const classes = getClasses('color');
+        expect(classes).toEqual({});
+    });
+
     it('should load module styles', () => {
         vi.spyOn(fs, 'existsSync').mockReturnValue(true);
         vi.spyOn(fs, 'readdirSync').mockImplementation(((path: string) => {
@@ -69,6 +79,8 @@ describe('src/utils/theme', () => {
         const classes = getClasses('color');
         // If module styles loaded, they merge.
         expect(classes).toBeDefined();
+        // Verify yaml loaded from mocked module path
+        expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringContaining('modules/mod1/theme/style.yaml'), 'utf-8');
     });
 
     describe('getComponentClasses()', () => {

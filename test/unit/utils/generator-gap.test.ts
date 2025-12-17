@@ -109,9 +109,11 @@ describe('src/utils/generator (Gaps)', () => {
                     'test-page-with-inherited': {
                         sections: [
                             {
-                                components: [
-                                    componentWithInherited
-                                ]
+                                components: {
+                                    main: [
+                                        componentWithInherited
+                                    ]
+                                }
                             }
                         ]
                     }
@@ -122,14 +124,11 @@ describe('src/utils/generator (Gaps)', () => {
 
         const result = generateData('test-page-with-inherited');
 
-
-
         expect(result).not.toBeNull();
         const resEnv = result as any;
-        expect(resEnv.sections).toHaveLength(1);
-        expect(resEnv.sections[0].components).toHaveLength(1);
+        expect(resEnv.widgets).toHaveLength(1);
 
-        const processedComponent = resEnv.sections[0].components[0];
+        const processedComponent = resEnv.widgets[0];
 
         // 'inherited' from prototype should not be present
         expect(processedComponent).not.toHaveProperty('inherited');

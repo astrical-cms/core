@@ -98,12 +98,7 @@ export const adaptOpenGraphImages = async (
     images.map(async (image) => {
       if (image?.url) {
         // Resolve the image reference to actual image metadata
-        const resolvedImage = (await findImage(image.url)) as ImageMetadata | undefined;
-        if (!resolvedImage) {
-          return {
-            url: '',
-          };
-        }
+        const resolvedImage = (await findImage(image.url)) as ImageMetadata;
 
         // Generate optimized image variant with specified dimensions
         const _image = await getImage({
