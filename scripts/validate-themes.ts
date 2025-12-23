@@ -64,7 +64,7 @@ async function loadCoreSpec(): Promise<Record<string, unknown>> {
   try {
     const content = await fs.promises.readFile(CORE_SPEC_FILE, 'utf-8');
     return yaml.load(content) as Record<string, unknown>;
-  } catch (error: any) {
+  } catch (error) {
     if (error.code === 'ENOENT') {
       console.warn(`Warning: Core spec file not found at ${CORE_SPEC_FILE}`);
       return {};
