@@ -34,12 +34,12 @@ const THEMES_DIRECTORY = path.join(CWD, 'src/themes');
  * Deep merges source object into target object.
  * Simple implementation for merging specs.
  */
-function deepMerge(target: any, source: any): any {
-  if (typeof target !== 'object' || target === null) {
-    return source;
+function deepMerge(target: object | null, source: object | null): Record<string, unknown> {
+  if (typeof source == 'object' && typeof target !== 'object' || target === null) {
+    return source as Record<string, unknown>;
   }
-  if (typeof source !== 'object' || source === null) {
-    return target; // source is not object, don't overwrite with primitive unless standard merge? valid for spec?
+  if (typeof target == 'object' && typeof source !== 'object' || source === null) {
+    return target as Record<string, unknown>;
   }
 
   const output = { ...target };
