@@ -1,0 +1,111 @@
+# Unified Strategy: The "Agent-First" Development Platform
+
+## 1. Core Philosophy: Operational Clarity
+We are shifting the documentation paradigm from **Passive Reference** (reading about features) to **Active Protocols** (instructions on executing tasks).
+
+* **The Goal:** Transform Astrical from a "CMS" into an "Autonomous Development Environment" where an AI Agent can Orient, Plan, Execute, and Verify without human hand-holding.
+* **The Method:** We will enforce a strict separation between **Knowledge** (Read-Only) and **Tooling** (Executable). We will codify implicit architectural patterns (like "Service Singletons") into explicit templates.
+
+---
+
+## 2. Directory Architecture (The Structure)
+
+We will reorganize `core/dev/` and `core/scripts/` to mirror the cognitive workflow of a Senior Engineer.
+
+### A. The Knowledge Layer (`core/dev/`)
+This directory is the AI's "Long-Term Memory." It is strictly for **reading**.
+
+| Directory | Purpose | Key Content |
+| :--- | :--- | :--- |
+| **`00_CONTEXT/`** | **Orientation.** The "Sensory System." | `current_state.md` (Generated), `project_manifest.yaml` (Generated). |
+| **`01_ARCHITECTURE/`** | **Laws.** Immutable system rules. | `system_boundaries.md` (Core vs Module), `data_flow.md` (Build pipeline). |
+| **`02_CODING_PATTERNS/`** | **Skills.** Dynamic logic recipes. | `client_side/` (Islands, Stores), `server_side/` (API Routes, DB). |
+| **`03_CONTENT_OPS/`** | **Strategy.** Content management. | `strategies/page_recipes.md`, `schemas/` (Symlinked specs). |
+| **`04_DESIGN_SYSTEM/`** | **Vision.** Visual standards. | `tokens.md` (Variables), `atomic_css.md` (Tailwind rules). |
+| **`05_QUALITY_CONTROL/`** | **Correction.** Debugging & QA. | `debugging_flowchart.md`, `testing_protocols.md`. |
+| **`templates/`** | **Tools.** Copy-paste starters. | `logic/GenericGuard.astro`, `services/GenericService.ts`. |
+
+### B. The Tooling Layer (`core/scripts/`)
+This directory is the AI's "Nervous System." It contains the executables that generate the artifacts in `00_CONTEXT` and verify work.
+
+* **`generate-context.ts`**: Scans `modules/`, `content/`, and `config.yaml` to write `dev/00_CONTEXT/current_state.md`.
+* **`validate-content.ts`**: Enforces Zod schemas on YAML content.
+* **`validate-themes.ts`**: Ensures theme integrity.
+* **`map-routes.ts`**: Generates a URL map for the AI to understand routing.
+
+---
+
+## 3. The "Sensory" Protocol (Orientation)
+
+**The Problem:** AI Agents often hallucinate files or lose track of installed modules.
+
+**The Strategy:** We implement a **"Wake-Up Routine."**
+
+1.  **The Trigger:** Every session begins with the command `npm run context:refresh`.
+2.  **The Action:** This runs `core/scripts/generate-context.ts`.
+3.  **The Artifact:** It generates `dev/00_CONTEXT/current_state.md`, a single file containing:
+    * **Active Configuration** (Snippet from `content/config.yaml`).
+    * **Module Inventory** (List of installed capabilities).
+    * **Content Tree** (High-level map of `content/pages`).
+    * **Theme Status** (Active theme and overrides).
+4.  **The Instruction:** The AI is strictly instructed: *"Before planning any task, read `dev/00_CONTEXT/current_state.md`."*
+
+---
+
+## 4. The "Coding" Protocols (Skill Acquisition)
+
+We will codify the three "Universal Patterns" inferred from your codebase to prevent the AI from writing messy, unmaintainable code.
+
+### Pattern 1: The "Logic Wrapper" (UI Logic)
+* **Derived From:** `src/components/common/AuthGuard.astro`.
+* **The Rule:** "Never mix business logic (Auth, Permissions) with display components."
+* **The Template:** `dev/templates/logic/GenericGuard.astro`.
+* **Usage:** Feature flags, Subscription gates, A/B testing.
+
+### Pattern 2: The "Service Singleton" (State Management)
+* **Derived From:** `src/utils/cache.ts`.
+* **The Rule:** "Never export a raw NanoStore. Always wrap it in a Service facade (`getVar`, `setVar`)."
+* **The Template:** `dev/templates/services/GenericService.ts`.
+* **Usage:** Shopping carts, User preferences, Analytics buffers.
+
+### Pattern 3: The "Secure Controller" (API Routes)
+* **Derived From:** `src/pages/api/submit-form.ts`.
+* **The Rule:** "API Routes are Controllers, not Services. They Validate Input -> Check Security (Honeypot) -> Delegate to a Utility."
+* **The Template:** `dev/templates/patterns/SafeApiRoute.ts`.
+* **Usage:** Form submissions, Webhooks, Data fetching proxies.
+
+---
+
+## 5. The "Quality Control" Loop (Self-Correction)
+
+**The Problem:** AI Agents get stuck in error loops or break existing features.
+
+**The Strategy:** A mandatory **"Verification Step"** for every task.
+
+1.  **Debugging Flowchart (`debugging_flowchart.md`):** A decision tree for common errors.
+    * *If "Hydration Mismatch" -> Check HTML nesting in `.astro` vs `.tsx`.*
+    * *If "Schema Error" -> Fix YAML content, DO NOT edit `.spec.yaml`.*
+2.  **Testing Protocols (`testing_protocols.md`):**
+    * Rule: "Every new utility in `src/utils/` MUST have a corresponding unit test in `test/unit/`."
+    * Reference: `test/unit/utils/cache.test.ts`.
+3.  **Validation Scripts:**
+    * Rule: "After editing content, run `npm run validate:content`."
+    * Rule: "After editing styles, run `npm run validate:themes`."
+
+---
+
+## 6. Implementation Order
+
+We will write the documentation in the following priority order to unlock Agent autonomy immediately:
+
+1.  **Sensory System (Immediate Impact):**
+    * Write `core/scripts/generate-context.ts`.
+    * Update `package.json` with the `context:refresh` command.
+2.  **Coding Patterns (Dynamic Capability):**
+    * Write `02_CODING_PATTERNS/client_side/stores.md` (The "Service Singleton" pattern).
+    * Write `02_CODING_PATTERNS/server_side/api_routes.md` (The "Secure Controller" pattern).
+    * Write `02_CODING_PATTERNS/client_side/islands.md` (Distinguishing Server Logic vs. Client Interactivity).
+3.  **Quality Control (Reliability):**
+    * Write `05_QUALITY_CONTROL/debugging_flowchart.md`.
+4.  **Templates (Standardization):**
+    * Create the `core/dev/templates/` directory and populate it with the 3 Core Pattern templates.
