@@ -14,7 +14,7 @@
  * - Support for eager loading of components
  *
  * Component Organization:
- * - Widgets: Reusable content blocks (Brands, CallToAction, Content, etc.)
+ * - Widgets: Reusable content blocks (RoleRedirect, SectionHeader, etc.)
  * - Forms: Form-related components (Form, field types, etc.)
  * - Sections: Layout containers (Header, Footer, SingleColumn, etc.)
  *
@@ -79,7 +79,7 @@ export function createComponentMap(glob: Record<string, unknown>) {
 }
 
 // Discover and load all widget components using eager loading
-// Includes components like Brands, CallToAction, Content, FAQs, Features, etc.
+// Includes core components like RoleRedirect, SectionHeader, and module-provided widgets.
 const widgetModules = import.meta.glob('~/components/widgets/**/*.astro', { eager: true });
 
 // Discover and load all form components using eager loading
@@ -104,7 +104,7 @@ const moduleSectionModules = import.meta.glob('@modules/*/src/components/section
  * which are handled separately.
  *
  * Component Categories:
- * - Widgets: Content display components (Brands, CallToAction, Content, FAQs, Features, Hero, etc.)
+ * - Widgets: Content display components (RoleRedirect, SectionHeader, and module widgets)
  * - Forms: Form-related components (Form, Checkbox, Email, FileUpload, LongText, Select, ShortText)
  */
 export const supportedTypes: Record<string, AstroComponentFactory> = {
