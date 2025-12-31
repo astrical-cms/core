@@ -33,7 +33,7 @@ modules/<module-name>/
 │   │   ├── widgets/      # Reusable UI widgets
 │   │   ├── forms/        # Form components
 │   │   └── sections/     # Layout/Section components
-│   ├── pages/            # Astro Routes & API Endpoints
+├── pages/            # Astro Routes & API Endpoints
 │   │   ├── api/          # API Routes (recommended)
 │   │   └── ...           # UI Routes
 │   └── utils/            # TypeScript Utilities/SDKs

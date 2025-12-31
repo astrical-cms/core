@@ -5,8 +5,8 @@ This guide provides a technical walkthrough for an AI agent on how to create and
 The core philosophy is a strict **separation of concerns**:
 
 *   **Structure (Components)**: Defined in `.astro` files. This is your focus when following this guide. Components are responsible for the HTML structure and accepting data via props. They should be completely agnostic of the content they display and the specific styles they wear.
-*   **Content (Data)**: Defined in `.yaml` files in the `/content` directory. This is managed according to the [Content Management Guide](content_management.rst).
-*   **Style (Theme)**: Defined in the `/src/themes/[theme-name]/` directory. This is managed according to the [AI Theming Engine Guide](theme_design.rst).
+*   **Content (Data)**: Defined in `.yaml` files in the `/content` directory. This is managed according to the [Content Management Guide](../03_content_ops/page_recipes.md).
+*   **Style (Theme)**: Defined in the `/src/themes/[theme-name]/` directory. This is managed according to the [AI Theming Engine Guide](../04_design_system/theme_reference.md).
 
 Your role in component development is to act as an architect, creating robust and flexible structures that can be filled with any content and styled by any theme.
 

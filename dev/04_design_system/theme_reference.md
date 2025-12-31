@@ -1,85 +1,12 @@
-# Astrical Theme Design System
+# Theme Reference & Style Guide
 
-**Target Audience: AI Agents & Theme Developers**
+This document complements [Tokens](tokens.md) and [Atomic CSS](aromic_css.md) by detailing the implementation of the `style.yaml` blueprint and providing strategic design rules.
 
-This comprehensive guide defines how to style and theme the Astrical platform. As an AI agent, you must strictly follow these specifications to ensure valid, responsive, and aesthetically pleasing designs. Existing themes are located in `src/themes/` (core) or `themes/` (site-specific).
+## The Blueprint (`style.yaml`)
 
----
+The `style.yaml` file contains the mapping of semantic components to Tailwind classes. It is organized into **Style Groups**.
 
-## 1. Core Philosophy
-
-Astrical uses a **configuration-driven** theming engine.
-*   **Logic is decoupled from Design**: Component logic (`.astro` files) resides in `src`. Visual styles (`style.yaml`) reside in contentable themes.
-*   **Utility-First**: The system relies heavily on **Tailwind CSS**.
-*   **Semantic Abstraction**: Instead of writing CSS classes directly on HTML elements, you map semantic keys (e.g., `Component+Hero.headline.title`) to strings of Tailwind classes in a YAML configuration.
-
-## 2. Architecture & Hierarchy
-
-The theming engine resolves styles using a strict precedence order (Highest to Lowest priority):
-
-1.  **User Overrides**: `content/style.yaml` (Site-specific tweaks)
-2.  **Theme Definition**: `src/themes/[theme-name]/style.yaml` (The full theme definition)
-3.  **Module Styles**: `modules/[module-name]/theme/style.yaml` (Styles packaged with modules)
-4.  **Defaults**: Hardcoded fallbacks in components (Rarely used, avoid relying on this).
-
-### Key Files
-
-| File | Purpose | AI Action |
-| :--- | :--- | :--- |
-| **`style.spec.yaml`** | **The Law**. Defines the schema, allowed keys, and property descriptions. | **Read Only**. Use this to validate your structure. |
-| **`style.yaml`** | **The Blueprint**. Maps semantic keys to Tailwind classes. | **Write**. This is where 90% of theming happens. |
-| **`global.css`** | **The Palette**. Defines CSS variables (colors, fonts) and base utilities. | **Write**. Edit this for global color usage and typography. |
-| **`tailwind.config.js`** | **The Config**. Maps CSS variables to Tailwind utilities. | **Read Only**. Rarely needs modification. |
-
----
-
-## 3. The Palette (`global.css`)
-
-All colors and fonts are defined as CSS variables to support runtime switching (e.g., Dark Mode).
-
-### 3.1 Color System
-You must define colors for both `:root` (Light Mode) and `.dark` (Dark Mode).
-
-| Variable | Tailwind Class | Usage |
-| :--- | :--- | :--- |
-| `--aw-color-primary` | `bg-primary`, `text-primary` | Main brand color, buttons, links. |
-| `--aw-color-secondary` | `bg-secondary`, `text-secondary` | Secondary brand color, highlights. |
-| `--aw-color-accent` | `bg-accent`, `text-accent` | Special alerts, notifications, eye-catching elements. |
-| `--aw-color-text-default` | `text-default` | Main body text. |
-| `--aw-color-text-muted` | `text-muted` | Supporting text, captions. |
-| `--aw-color-bg-page` | `bg-page` | Main page background. |
-| `--aw-color-surface` | `bg-surface` | Card backgrounds, dropdowns. |
-| `--aw-color-border` | `border-surface` | Borders, dividers. |
-
-**Example Implementation:**
-```css
-:root {
-  --aw-color-primary: rgb(59 130 246); /* Blue 500 */
-  --aw-color-bg-page: rgb(255 255 255);
-  --aw-color-text-default: rgb(17 24 39);
-}
-
-.dark {
-  --aw-color-primary: rgb(96 165 250); /* Blue 400 */
-  --aw-color-bg-page: rgb(3 7 18);
-  --aw-color-text-default: rgb(243 244 246);
-}
-```
-
-### 3.2 Typography
-Fonts are defined via CSS variables to allow easy swapping of font families.
-
-*   `--aw-font-sans`: Body text, UI elements.
-*   `--aw-font-serif`: Optional, for blog posts or formal designs.
-*   `--aw-font-heading`: Headings (H1-H6). Often the same as Sans.
-
----
-
-## 4. The Blueprint (`style.yaml`)
-
-This file contains the mapping of semantic components to Tailwind classes. It is organized into **Style Groups**.
-
-### 4.1 Syntax & References
+### Syntax & References
 *   **Simple String**: Just a list of utility classes.
     ```yaml
     title: 'text-4xl font-bold text-default'
@@ -94,7 +21,7 @@ This file contains the mapping of semantic components to Tailwind classes. It is
       column_wrapper: '@section_columns'
     ```
 
-### 4.2 Comprehensive Style Reference
+### Comprehensive Style Reference
 Refer to `dev/theme.spec.yaml` for the exact schema. Below are the key groups you will encounter.
 
 #### A. Layouts (`Layout+*`)
@@ -135,9 +62,7 @@ Global site singletons.
 *   **`Page+Footer`**: The site footer.
     *   `links_grid`: Responsive grid for footer links.
 
----
-
-## 5. Design Intelligence: How to Style
+## Design Intelligence: How to Style
 
 When asked to "create a theme" or "update styles," follow these rules to ensure high-quality output.
 
@@ -173,9 +98,7 @@ If a component supports a `bg` image:
       overlay: 'bg-black/60' # Ensure text is readable
     ```
 
----
-
-## 6. Theming Workflow Example
+## Theming Workflow Example
 
 **User Request**: "Make the hero section look more modern with a dark theme and larger text."
 
@@ -190,26 +113,7 @@ If a component supports a `bg` image:
     *   Add dark background: `bg-slate-900`.
 5.  **Validate**: Run `npm run validate` to ensure YAML correctness.
 
-## 7. Advanced: Custom Utility Classes
-
-Sometimes Tailwind utility strings get too long. You can define custom CSS classes in `global.css` using `@utility`.
-
-**`global.css`**:
-```css
-@utility btn-glow {
-  @apply shadow-lg shadow-primary/50 transition-shadow duration-300 hover:shadow-primary/80;
-}
-```
-
-**`style.yaml`**:
-```yaml
-Component+Button:
-  primary: 'btn btn-primary btn-glow'
-```
-
----
-
-## 8. Troubleshooting
+## Troubleshooting
 
 *   **Changes not showing?**
     *   Is the server running? (`npm run dev`)
