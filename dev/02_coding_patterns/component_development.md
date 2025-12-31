@@ -293,4 +293,4 @@ AI-generated components must be robust. Never assume data exists.
     *   **Bad**: `document.querySelector('.my-button')`
     *   **Good**: `const container = document.getElementById(id); container.querySelector('.my-button');`
 
-2.  **Nano Stores**: For shared state management, prefer Nano Stores over passing callbacks.
+2.  **Nano Stores**: For shared state management, prefer Nano Stores over passing callbacks. See [Services Protocol](../app_logic/services.md).

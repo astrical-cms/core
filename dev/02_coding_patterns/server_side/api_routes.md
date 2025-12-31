@@ -21,7 +21,7 @@ In Astrical, an API Route (a `.ts` file in `src/pages/api/`) acts strictly as a 
 Every API route must follow this 4-step execution flow to ensure security and consistency.
 
 1.  **Validate:** Ensure inputs match a strict Zod schema.
-2.  **Guard:** Check security (Honeypot, Rate Limiting, Authentication).
+2.  **Guard:** Check security (Honeypot, Rate Limiting, Authentication). See [Guards Protocol](../app_logic/guards.md).
 3.  **Act:** Call a Service or Form Handler to perform the work.
 4.  **Respond:** Return a standardized JSON response using `ResponseFactory`.
 
